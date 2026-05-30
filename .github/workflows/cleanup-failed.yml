@@ -18,6 +18,11 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      - name: 验证 PAT 权限
+        env:
+          PAT: ${{ secrets.PAT }}
+        run: node scripts/verify-pat.js
+
       - name: 删除失败记录
         env:
           PAT: ${{ secrets.PAT }}
