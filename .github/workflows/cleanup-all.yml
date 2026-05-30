@@ -20,7 +20,7 @@ jobs:
           fi
           echo "开始清空（勿 Cancel，约 5～15 分钟）"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: 验证 PAT 权限
         env:
