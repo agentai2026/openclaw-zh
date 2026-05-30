@@ -91,17 +91,29 @@ async function deleteRun(runId) {
   await api(`/repos/${OWNER}/${REPO}/actions/runs/${runId}`, 'DELETE');
 }
 
+/** 无法删除的记录 id（避免死循环 + 不中断整批） */
+const skipIds = new Set();
+
+function isDenied(err) {
+  const msg = err instanceof Error ? err.message : String(err);
+  return msg.includes('403') || msg.includes('401');
+}
+
 async function purgeStatus(status) {
   let deleted = 0;
   const label = status ?? 'all';
   while (true) {
     const runs = await listRuns(status);
     if (runs.length === 0) break;
+
+    let deletedThisRound = 0;
     for (const run of runs) {
       if (CURRENT_RUN_ID && run.id === CURRENT_RUN_ID) {
         log(`跳过当前运行 id=${run.id}`);
         continue;
       }
+      if (skipIds.has(run.id)) continue;
+
       try {
         if (['queued', 'in_progress', 'waiting', 'pending', 'requested'].includes(run.status)) {
           await cancelRun(run.id);
@@ -109,23 +121,24 @@ async function purgeStatus(status) {
         }
         await deleteRun(run.id);
         deleted += 1;
+        deletedThisRound += 1;
         log(`[${label}] #${run.run_number} ${run.name ?? run.display_title} id=${run.id}`);
         await sleep(DELAY_MS);
       } catch (err) {
-        if (is403(err)) {
-          console.error('[error] 再次出现 403，请检查 PAT 权限后重试');
-          process.exit(1);
+        if (isDenied(err)) {
+          skipIds.add(run.id);
+          log(
+            `[${label}] 无法删除 #${run.run_number} id=${run.id}（GitHub 拒绝，已跳过继续）`,
+          );
+        } else {
+          log(`跳过 id=${run.id}: ${err instanceof Error ? err.message : err}`);
         }
-        log(`跳过 id=${run.id}: ${err instanceof Error ? err.message : err}`);
       }
     }
+
+    if (deletedThisRound === 0) break;
   }
   return deleted;
-}
-
-function is403(err) {
-  const msg = err instanceof Error ? err.message : String(err);
-  return msg.includes('403');
 }
 
 /** 先删一条探针，403 则立即失败，避免刷几百条无效日志 */
@@ -148,17 +161,7 @@ async function probeDeletePermission() {
     log(`权限检查通过，已删除探针记录 #${run.run_number} id=${run.id}`);
     return { empty: false, probeDeleted: 1 };
   } catch (err) {
-    if (is403(err)) {
-      console.error(`
-[error] 403 Forbidden — 当前 PAT 无权删除 Actions 记录。
-
-请用【仓库所有者 agentai2026】账号重新生成 Classic PAT：
-  - 勾选 repo（完整仓库权限）
-  - 勾选 workflow
-在 GitHub → openclaw-zh → Settings → Secrets → Actions → 更新 PAT 后重新 Run workflow。
-`);
-      process.exit(1);
-    }
+    if (isDenied(err)) skipIds.add(run.id);
     log(`探针删除失败，继续批量删除: ${err instanceof Error ? err.message : err}`);
     return { empty: false, probeDeleted: 0 };
   }
@@ -180,7 +183,11 @@ async function main() {
     total += await purgeStatus(status);
   }
 
-  log(`完成，共删除 ${total} 条`);
+  if (skipIds.size > 0) {
+    log(`完成：已删除 ${total} 条，GitHub 不允许删除的已跳过 ${skipIds.size} 条（可忽略）`);
+  } else {
+    log(`完成，共删除 ${total} 条`);
+  }
 }
 
 main().catch((err) => {

@@ -66,25 +66,32 @@ async function deleteRun(runId) {
   await api(`/repos/${OWNER}/${REPO}/actions/runs/${runId}`, 'DELETE');
 }
 
+const skipIds = new Set();
+
 /** 始终只拉第 1 页，删完一条后面会顶上来，直到为空 */
 async function purgeByFetcher(fetcher, label) {
   let deleted = 0;
   while (true) {
     const runs = await fetcher();
-    if (runs.length === 0) {
-      break;
-    }
+    if (runs.length === 0) break;
+
+    let deletedThisRound = 0;
     for (const run of runs) {
       if (CURRENT_RUN_ID && run.id === CURRENT_RUN_ID) continue;
+      if (skipIds.has(run.id)) continue;
       try {
         await deleteRun(run.id);
         deleted += 1;
+        deletedThisRound += 1;
         log(`已删除 [${label}] #${run.run_number} ${run.display_title ?? run.name} id=${run.id}`);
         await sleep(DELAY_MS);
       } catch (err) {
-        log(`跳过 id=${run.id}: ${err instanceof Error ? err.message : err}`);
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('403') || msg.includes('401')) skipIds.add(run.id);
+        log(`跳过 id=${run.id}: ${msg}`);
       }
     }
+    if (deletedThisRound === 0) break;
   }
   return deleted;
 }
