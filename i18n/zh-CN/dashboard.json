@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "description": "OpenClaw Dashboard 界面翻译词条",
+    "locale": "zh-CN",
+    "count": 20
+  },
+  "Dashboard": "控制台",
+  "Overview": "概览",
+  "Agents": "智能体",
+  "Channels": "频道",
+  "Settings": "设置",
+  "Logs": "日志",
+  "Health": "健康检查",
+  "Connected": "已连接",
+  "Disconnected": "已断开",
+  "Running": "运行中",
+  "Stopped": "已停止",
+  "Save": "保存",
+  "Cancel": "取消",
+  "Delete": "删除",
+  "Edit": "编辑",
+  "Refresh": "刷新",
+  "Search": "搜索",
+  "Documentation": "文档",
+  "Welcome": "欢迎",
+  "Loading...": "加载中..."
+}
