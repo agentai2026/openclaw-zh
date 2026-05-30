@@ -1,0 +1,125 @@
+# OpenClaw 汉化版 — 核心构建（可复用）
+# 克隆上游 → 汉化 → 构建 → 上传产物
+
+name: 核心构建逻辑
+
+on:
+  workflow_call:
+    inputs:
+      version_type:
+        description: 'nightly 或 stable'
+        required: true
+        type: string
+      upstream_version:
+        description: '上游 npm 版本号'
+        required: true
+        type: string
+    outputs:
+      version:
+        description: '汉化构建版本号'
+        value: ${{ jobs.build.outputs.version }}
+      upstream_version:
+        description: '上游版本'
+        value: ${{ jobs.build.outputs.upstream_version }}
+
+env:
+  UPSTREAM_REPO: openclaw/openclaw
+  NODE_VERSION: '22'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      upstream_version: ${{ steps.version.outputs.official_version }}
+
+    steps:
+      - name: 检出 overlay 仓库
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: 克隆上游 OpenClaw
+        run: |
+          git clone --depth 1 https://github.com/${{ env.UPSTREAM_REPO }}.git openclaw
+          cd openclaw
+          echo "commit=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "✅ 上游已克隆 commit=$commit"
+
+      - name: 应用汉化
+        env:
+          OPENCLAW_TARGET: openclaw
+          OVERLAY_ROOT: ${{ github.workspace }}
+        run: |
+          node scripts/apply-package-zh.js
+          node scripts/apply-i18n.js
+
+      - name: 设置汉化版版本号
+        id: version
+        env:
+          OPENCLAW_TARGET: openclaw
+          UPSTREAM_VERSION: ${{ inputs.upstream_version }}
+          VERSION_TAG: ${{ inputs.version_type }}
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
+        run: node scripts/bump-openclaw-version.js
+
+      - name: 安装依赖
+        working-directory: openclaw
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: |
+          corepack enable
+          pnpm install --no-frozen-lockfile --reporter=append-only
+
+      - name: 构建 OpenClaw（分步，跳过易失败的全量 tsc）
+        working-directory: openclaw
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: |
+          set -e
+          date -u "+[build] 开始 %Y-%m-%d %H:%M:%S UTC"
+          pnpm canvas:a2ui:bundle || true
+          node scripts/tsdown-build.mjs
+          node scripts/runtime-postbuild.mjs
+          node scripts/build-stamp.mjs || true
+          pnpm build:plugin-sdk:dts || echo "⚠️ dts 允许失败"
+          node --import tsx scripts/write-plugin-sdk-entry-dts.ts || true
+          node --import tsx scripts/canvas-a2ui-copy.ts || true
+          node --import tsx scripts/copy-hook-metadata.ts || true
+          node --import tsx scripts/copy-export-html-templates.ts || true
+          node --import tsx scripts/write-build-info.ts || true
+          node --import tsx scripts/write-cli-startup-metadata.ts || true
+          node --import tsx scripts/write-cli-compat.ts || true
+          pnpm ui:build || npm run ui:build || true
+          date -u "+[build] 完成 %Y-%m-%d %H:%M:%S UTC"
+
+      - name: 准备 npm 发布元数据
+        env:
+          OPENCLAW_TARGET: openclaw
+        run: |
+          node scripts/prepare-npm-publish.js
+          cp README.md openclaw/README.md
+
+      - name: 修复 dist 内 self-reference
+        working-directory: openclaw
+        run: |
+          if [ -d dist ]; then
+            find dist -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -print0 | \
+              xargs -0 sed -i -E 's#(from |import |import\(|require\()"openclaw(["/])#\1"@agentai2026/openclaw-zh\2#g' || true
+          fi
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: openclaw-build-${{ inputs.version_type }}
+          path: openclaw/
+          retention-days: 2

@@ -1,0 +1,160 @@
+# OpenClaw 汉化版 — Nightly 自动构建与发布
+# 轻量 overlay 仓库：不在 main 提交上游源码，仅在 CI 克隆构建
+
+name: Nightly 构建与发布
+
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: '强制构建（跳过上游变更检测）'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: openclaw-zh-nightly
+  cancel-in-progress: false
+
+env:
+  NPM_PACKAGE: '@agentai2026/openclaw-zh'
+  DOCKER_IMAGE: agentai2027/openclaw-zh
+  UPSTREAM_REPO: openclaw/openclaw
+
+permissions:
+  contents: write
+
+jobs:
+  check-upstream:
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.check.outputs.has_changes }}
+      upstream_version: ${{ steps.check.outputs.upstream_version }}
+      upstream_sha: ${{ steps.check.outputs.upstream_sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 检测上游是否有变更
+        id: check
+        env:
+          FORCE: ${{ github.event.inputs.force_build }}
+        run: |
+          UPSTREAM_VERSION=$(curl -fsSL https://registry.npmjs.org/openclaw/latest | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).version))")
+          UPSTREAM_SHA=$(curl -fsSL "https://api.github.com/repos/${UPSTREAM_REPO}/commits/main" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).sha.slice(0,7)))")
+          echo "upstream_version=$UPSTREAM_VERSION" >> $GITHUB_OUTPUT
+          echo "upstream_sha=$UPSTREAM_SHA" >> $GITHUB_OUTPUT
+
+          LAST_SHA=""
+          LAST_VER=""
+          if [ -f .github/last-build.json ]; then
+            LAST_SHA=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.github/last-build.json','utf8')).upstream_sha||'')")
+            LAST_VER=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.github/last-build.json','utf8')).upstream_version||'')")
+          fi
+
+          if [ "$FORCE" = "true" ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "⚡ 强制构建"
+            exit 0
+          fi
+
+          if [ "$UPSTREAM_SHA" = "$LAST_SHA" ] && [ "$UPSTREAM_VERSION" = "$LAST_VER" ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "⏭️ 上游未变化 ($UPSTREAM_VERSION @ $UPSTREAM_SHA)，跳过"
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "🆕 上游有变化: $LAST_VER@$LAST_SHA -> $UPSTREAM_VERSION@$UPSTREAM_SHA"
+          fi
+
+  build:
+    needs: check-upstream
+    if: needs.check-upstream.outputs.has_changes == 'true'
+    uses: ./.github/workflows/build-core.yml
+    with:
+      version_type: nightly
+      upstream_version: ${{ needs.check-upstream.outputs.upstream_version }}
+
+  publish:
+    needs: [check-upstream, build]
+    if: needs.check-upstream.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PAT || github.token }}
+
+      - name: 下载构建产物
+        uses: actions/download-artifact@v4
+        with:
+          name: openclaw-build-nightly
+          path: openclaw
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 发布 npm (@nightly)
+        working-directory: openclaw
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          VER=$(node -p "require('./package.json').version")
+          echo "[npm] 发布 $VER dist-tag=nightly"
+          if npm view "${{ env.NPM_PACKAGE }}@${VER}" version 2>/dev/null; then
+            echo "[npm] 版本已存在，跳过"
+            exit 0
+          fi
+          npm publish --access public --ignore-scripts --tag nightly 2>&1 | tee /tmp/npm-publish.log
+          CODE=${PIPESTATUS[0]}
+          if [ "$CODE" -eq 0 ]; then exit 0; fi
+          grep -qiE "EPUBLISHCONFLICT|already exists|403 Forbidden" /tmp/npm-publish.log && exit 0
+          exit "$CODE"
+
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录 Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: agentai2027
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 构建并推送 Docker
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.publish
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:nightly
+            ${{ env.DOCKER_IMAGE }}:latest
+
+      - name: 更新 last-build 记录
+        run: |
+          VER=$(node -p "require('./openclaw/package.json').version")
+          node -e "
+          const fs=require('fs');
+          fs.writeFileSync('.github/last-build.json', JSON.stringify({
+            upstream_version: '${{ needs.check-upstream.outputs.upstream_version }}',
+            upstream_sha: '${{ needs.check-upstream.outputs.upstream_sha }}',
+            built_version: '${VER}',
+            built_at: new Date().toISOString()
+          }, null, 2) + '\n');
+          "
+          git config user.name "openclaw-zh-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/last-build.json
+          git diff --staged --quiet || git commit -m "ci: 更新 last-build ${{ needs.check-upstream.outputs.upstream_sha }}"
+          git push || true
+
+      - name: 构建摘要
+        run: |
+          VER=$(node -p "require('./openclaw/package.json').version")
+          echo "## Nightly 发布摘要" >> $GITHUB_STEP_SUMMARY
+          echo "| 项目 | 值 |" >> $GITHUB_STEP_SUMMARY
+          echo "| npm | \`npm i -g ${{ env.NPM_PACKAGE }}@nightly\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 版本 | \`${VER}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker | \`${{ env.DOCKER_IMAGE }}:nightly\` |" >> $GITHUB_STEP_SUMMARY

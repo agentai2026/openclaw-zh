@@ -1,0 +1,17 @@
+# 使用 CI 已构建的 openclaw 目录（context 为仓库根，内含 openclaw/）
+FROM node:22-bookworm-slim
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY openclaw/ /app/
+
+ENV NODE_ENV=production
+EXPOSE 18789
+
+LABEL org.opencontainers.image.title="OpenClaw 汉化版"
+LABEL org.opencontainers.image.source="https://github.com/agentai2026/openclaw-zh"
+LABEL org.opencontainers.image.vendor="agentai2027"
+
+CMD ["node", "openclaw.mjs", "gateway", "run"]
