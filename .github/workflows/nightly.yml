@@ -155,12 +155,23 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::未配置 NPM_TOKEN Secret"
+            exit 1
+          fi
           VER=$(node -p "require('./package.json').version")
-          if npm view "${{ env.NPM_PACKAGE }}@${VER}" version 2>/dev/null; then exit 0; fi
+          echo "[npm] 发布 ${{ env.NPM_PACKAGE }}@${VER}"
+          if npm view "${{ env.NPM_PACKAGE }}@${VER}" version 2>/dev/null; then
+            echo "[npm] 版本已存在，跳过"
+            exit 0
+          fi
           npm publish --access public --ignore-scripts --tag nightly 2>&1 | tee /tmp/npm.log
           CODE=${PIPESTATUS[0]}
-          [ "$CODE" -eq 0 ] && exit 0
-          grep -qiE "EPUBLISHCONFLICT|already exists" /tmp/npm.log && exit 0
+          if [ "$CODE" -eq 0 ]; then exit 0; fi
+          if grep -qiE "EPUBLISHCONFLICT|already exists" /tmp/npm.log; then exit 0; fi
+          if grep -qiE "bypass 2fa|Two-factor authentication" /tmp/npm.log; then
+            echo "::error::NPM_TOKEN 无效：请使用 npm Classic「Automation」令牌，或 Granular 令牌并开启 Bypass 2FA。见 SETUP_GUIDE.md"
+          fi
           exit "$CODE"
 
       - uses: docker/setup-buildx-action@v3
