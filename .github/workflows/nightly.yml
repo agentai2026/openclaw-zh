@@ -104,7 +104,7 @@ jobs:
           node scripts/tsdown-build.mjs
           node scripts/runtime-postbuild.mjs
           node scripts/build-stamp.mjs || true
-          pnpm build:plugin-sdk:dts || true
+          pnpm build:plugin-sdk:dts || echo "⚠️ plugin-sdk dts 跳过（上游 TS 问题不影响运行）"
           node --import tsx scripts/write-plugin-sdk-entry-dts.ts || true
           node --import tsx scripts/canvas-a2ui-copy.ts || true
           node --import tsx scripts/copy-hook-metadata.ts || true

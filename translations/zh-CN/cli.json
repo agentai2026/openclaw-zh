@@ -1,38 +1,16 @@
 {
   "_meta": {
-    "description": "OpenClaw CLI 界面翻译词条",
+    "description": "仅用于 CLI 帮助文案（勿加 error/config/agent 等短词，会误伤 src 类型）",
     "locale": "zh-CN",
-    "count": 30
+    "count": 12
   },
   "Usage": "用法",
   "Options": "选项",
   "Commands": "命令",
   "Global Options": "全局选项",
   "Examples": "示例",
-  "help": "帮助",
-  "version": "版本",
-  "config": "配置",
-  "doctor": "诊断",
-  "gateway": "网关",
-  "agent": "智能体",
-  "channels": "频道",
-  "status": "状态",
-  "start": "启动",
-  "stop": "停止",
-  "restart": "重启",
-  "logs": "日志",
-  "install": "安装",
-  "update": "更新",
-  "init": "初始化",
-  "setup": "设置",
-  "verbose": "详细输出",
-  "failed": "失败",
-  "success": "成功",
-  "warning": "警告",
-  "error": "错误",
-  "done": "完成",
-  "loading": "加载中",
-  "not found": "未找到",
   "unknown command": "未知命令",
-  "see --help for usage": "使用 --help 查看帮助"
+  "see --help for usage": "使用 --help 查看帮助",
+  "not found": "未找到",
+  "Loading...": "加载中..."
 }

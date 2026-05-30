@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 /**
- * apply-i18n.js — 在克隆的上游 openclaw 目录应用汉化替换
+ * apply-i18n.js — 按范围应用汉化，避免替换 src 内协议/类型用字符串
+ *
+ * - dashboard.json → ui/
+ * - config.json    → schema.labels.ts / schema.help.ts
+ * - cli.json       → src/cli、src/commands（仅较长文案键）
+ * - brand-replace  → ui/ + README
  */
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
@@ -11,7 +16,6 @@ import { resolveOpenClawTarget, translationsDir, patchesDir, OVERLAY_ROOT } from
 const TARGET = resolveOpenClawTarget();
 const I18N_DIR = translationsDir();
 const BRAND_PATCH = join(patchesDir(), 'brand-replace.json');
-const SCAN_DIRS = ['src', 'apps', 'ui'];
 const EXTENSIONS = new Set(['.js', '.ts', '.tsx']);
 const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '.next']);
 const SKIP_FILE_NAMES = new Set([
@@ -21,35 +25,45 @@ const SKIP_FILE_NAMES = new Set([
   'package-lock.json',
 ]);
 
+/** 词典文件 → 允许扫描的相对路径片段（相对于 TARGET） */
+const RULES = [
+  { file: 'dashboard.json', match: (p) => p.replace(/\\/g, '/').includes('/ui/') },
+  {
+    file: 'config.json',
+    match: (p) => {
+      const n = basename(p);
+      return n === 'schema.labels.ts' || n === 'schema.help.ts';
+    },
+  },
+  {
+    file: 'cli.json',
+    match: (p) => {
+      const n = p.replace(/\\/g, '/');
+      return n.includes('/src/cli/') || n.includes('/src/commands/');
+    },
+  },
+  {
+    file: 'brand-replace.json',
+    fromPatch: true,
+    match: (p) => {
+      const n = p.replace(/\\/g, '/');
+      return n.includes('/ui/') || basename(p) === 'README.md';
+    },
+  },
+];
+
 function log(step, detail) {
   console.log(`[${step}] 状态：${detail}`);
 }
 
-async function loadDictionary() {
+async function loadJsonDict(path) {
+  if (!existsSync(path)) return {};
+  const data = JSON.parse(await readFile(path, 'utf8'));
   const dict = {};
-
-  if (existsSync(I18N_DIR)) {
-    const files = (await readdir(I18N_DIR)).filter((f) => f.endsWith('.json'));
-    for (const file of files) {
-      const raw = await readFile(join(I18N_DIR, file), 'utf8');
-      const data = JSON.parse(raw);
-      for (const [key, value] of Object.entries(data)) {
-        if (key === '_meta' || typeof value !== 'string') continue;
-        dict[key] = value;
-      }
-      log('load', `已加载 ${relative(OVERLAY_ROOT, join(I18N_DIR, file))}`);
-    }
+  for (const [key, value] of Object.entries(data)) {
+    if (key === '_meta' || typeof value !== 'string') continue;
+    dict[key] = value;
   }
-
-  if (existsSync(BRAND_PATCH)) {
-    const brand = JSON.parse(await readFile(BRAND_PATCH, 'utf8'));
-    for (const [key, value] of Object.entries(brand)) {
-      if (key === '_meta' || typeof value !== 'string') continue;
-      dict[key] = value;
-    }
-    log('load', '已合并 patches/brand-replace.json');
-  }
-
   return dict;
 }
 
@@ -86,10 +100,6 @@ function replaceStringLiterals(content, dict) {
   return { content: result, replaceCount };
 }
 
-function shouldSkipFile(filePath) {
-  return SKIP_FILE_NAMES.has(basename(filePath));
-}
-
 async function collectFiles(dir, acc = []) {
   if (!existsSync(dir)) return acc;
   const entries = await readdir(dir, { withFileTypes: true });
@@ -98,7 +108,7 @@ async function collectFiles(dir, acc = []) {
     const full = join(dir, ent.name);
     if (ent.isDirectory()) {
       await collectFiles(full, acc);
-    } else if (EXTENSIONS.has(full.slice(full.lastIndexOf('.'))) && !shouldSkipFile(full)) {
+    } else if (EXTENSIONS.has(full.slice(full.lastIndexOf('.'))) && !SKIP_FILE_NAMES.has(basename(full))) {
       acc.push(full);
     }
   }
@@ -106,34 +116,41 @@ async function collectFiles(dir, acc = []) {
 }
 
 async function main() {
-  log('init', `overlay=${OVERLAY_ROOT}`);
   log('init', `target=${TARGET}`);
-  log('init', '开始应用汉化替换');
 
-  const dict = await loadDictionary();
-  if (Object.keys(dict).length === 0) {
-    log('dict', '词典为空，退出');
-    process.exit(0);
+  const allFiles = [];
+  for (const root of ['ui', 'src', 'apps']) {
+    await collectFiles(join(TARGET, root), allFiles);
   }
-  log('dict', `共 ${Object.keys(dict).length} 个词条`);
+  const readme = join(TARGET, 'README.md');
+  if (existsSync(readme)) allFiles.push(readme);
 
-  const files = [];
-  for (const dir of SCAN_DIRS) {
-    await collectFiles(join(TARGET, dir), files);
-  }
-  log('scan', `待扫描 ${files.length} 个文件`);
+  log('scan', `候选文件 ${allFiles.length} 个`);
 
   let modifiedFiles = 0;
   let totalReplacements = 0;
 
-  for (const filePath of files) {
-    const original = await readFile(filePath, 'utf8');
-    const { content, replaceCount } = replaceStringLiterals(original, dict);
-    if (content !== original) {
+  for (const rule of RULES) {
+    const dictPath = rule.fromPatch
+      ? BRAND_PATCH
+      : join(I18N_DIR, rule.file);
+    const dict = await loadJsonDict(dictPath);
+    if (Object.keys(dict).length === 0) continue;
+
+    log('rule', `${rule.file} → ${Object.keys(dict).length} 条`);
+
+    for (const filePath of allFiles) {
+      const rel = relative(TARGET, filePath);
+      if (!rule.match(rel)) continue;
+
+      const original = await readFile(filePath, 'utf8');
+      const { content, replaceCount } = replaceStringLiterals(original, dict);
+      if (content === original) continue;
+
       await writeFile(filePath, content, 'utf8');
       modifiedFiles += 1;
       totalReplacements += replaceCount;
-      log('file', `已修改 ${relative(TARGET, filePath)}（${replaceCount} 处）`);
+      log('file', `${rel}（${replaceCount} 处）`);
     }
   }
 
