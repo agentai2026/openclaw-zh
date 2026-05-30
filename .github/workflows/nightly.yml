@@ -90,7 +90,7 @@ jobs:
           node scripts/apply-package-zh.js
           node scripts/apply-i18n.js
           OPENCLAW_TARGET=openclaw UPSTREAM_VERSION=${{ needs.check-upstream.outputs.upstream_version }} \
-            GITHUB_RUN_NUMBER=${{ github.run_number }} node scripts/bump-openclaw-version.js
+            node scripts/bump-openclaw-version.js
 
       - name: 安装依赖并构建
         working-directory: openclaw
