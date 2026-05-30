@@ -17,6 +17,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  # 让 checkout 等 JS Action 使用 Node 24，消除弃用警告
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NPM_PACKAGE: '@agentai2026/openclaw-zh'
   DOCKER_IMAGE: agentai2027/openclaw-zh
   UPSTREAM_REPO: openclaw/openclaw
