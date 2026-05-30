@@ -12,9 +12,9 @@ const EXTRA_WORKFLOW_NAMES = ['Dependabot Updates'];
 const PER_PAGE = 100;
 const DELAY_MS = 150;
 
-const token = process.env.PAT || process.env.GITHUB_TOKEN;
+const token = process.env.PAT;
 if (!token) {
-  console.error('[error] 请设置环境变量 PAT 或 GITHUB_TOKEN');
+  console.error('[error] 请设置环境变量 PAT（Classic：repo + workflow）');
   process.exit(1);
 }
 

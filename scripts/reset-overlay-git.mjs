@@ -26,10 +26,11 @@ const KEEP_TOP = new Set([
 ]);
 
 const KEEP_GITHUB = new Set([
-  'workflows/build-core.yml',
   'workflows/nightly.yml',
-  'workflows/cleanup-runs.yml',
+  'workflows/cleanup-failed.yml',
+  'workflows/cleanup-all.yml',
   'last-build.json',
+  'dependabot.yml',
 ]);
 
 function rmGitHubExtras() {
@@ -83,10 +84,11 @@ const ADD_PATHS = [
   'package.json',
   '.gitignore',
   'LICENSE',
-  '.github/workflows/build-core.yml',
   '.github/workflows/nightly.yml',
-  '.github/workflows/cleanup-runs.yml',
+  '.github/workflows/cleanup-failed.yml',
+  '.github/workflows/cleanup-all.yml',
   '.github/last-build.json',
+  '.github/dependabot.yml',
 ];
 
 rmRootExtras();

@@ -1,0 +1,25 @@
+# 一键删除本仓库全部 Actions 运行记录（需 PAT）
+name: 一键清空记录
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: 检查 PAT
+        run: |
+          if [ -z "${{ secrets.PAT }}" ]; then
+            echo "::error::请配置 Secret「PAT」（Classic：repo + workflow）"
+            exit 1
+          fi
+          echo "开始清空（勿 Cancel，约 5～15 分钟）"
+
+      - uses: actions/checkout@v4
+
+      - name: 删除全部记录
+        env:
+          PAT: ${{ secrets.PAT }}
+        run: node scripts/delete-all-runs.js

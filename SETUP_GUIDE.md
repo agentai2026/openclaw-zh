@@ -16,9 +16,9 @@
 
 | 文件 | 作用 |
 |------|------|
-| `build-core.yml` | 可复用：克隆 + 汉化 + 构建 + 产物 |
-| `nightly.yml` | 每小时检测上游变更 → 调用 build-core → npm + Docker |
-| `cleanup-runs.yml` | 清理失败的工作流运行 |
+| `nightly.yml` | **定时发布**（每小时，上游有变才构建） |
+| `cleanup-failed.yml` | **删除失败记录**（手动） |
+| `cleanup-all.yml` | **一键清空**全部 Actions 记录（手动，需 PAT） |
 
 ## 本地维护
 

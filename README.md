@@ -21,8 +21,9 @@ openclaw-zh/          ← 本仓库（轻量）
 ├── scripts/          ← apply / bump / publish
 ├── cli/              ← openclaw-zh-cli
 └── .github/workflows/
-    ├── build-core.yml   ← 克隆上游 + 汉化 + 构建
-    └── nightly.yml      ← 检测上游变更 → 发布 npm + Docker
+    ├── nightly.yml         ← 定时发布
+    ├── cleanup-failed.yml  ← 删除失败记录
+    └── cleanup-all.yml     ← 一键清空全部记录
 
 CI 临时目录 openclaw/  ← 不入库，每次从官方克隆
 ```

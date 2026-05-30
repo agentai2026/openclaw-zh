@@ -1,0 +1,3 @@
+# 关闭 Dependabot 自动 PR（避免多出一个 Actions 工作流）
+version: 2
+updates: []
