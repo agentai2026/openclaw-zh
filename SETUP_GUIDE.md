@@ -71,6 +71,8 @@ node cli/index.mjs apply --target=./openclaw
 
 ## 删除已发布的 npm / Docker（不可恢复）
 
+若自动删除后 `npm view` 仍显示 `1.0.0`：npm 常**拒绝删除超过 72 小时**的旧版。请打开 [npm 包设置页](https://www.npmjs.com/package/@agentai2026/openclaw-zh) → **Package settings** → **Delete package** 手动删整包。
+
 Actions → **删除已发布包** → Run workflow → 在 `confirm` 里输入 **`DELETE`**。
 
 需要 Secrets：`NPM_TOKEN`（需能 **删除/下架** 包）、`DOCKER_PASSWORD`。

@@ -25,15 +25,17 @@ const env = {
   NODE_AUTH_TOKEN: token,
 };
 
-function run(cmd) {
+function run(cmd, { allowFail = false } = {}) {
   console.log(`[npm] ${cmd}`);
   try {
     execSync(cmd, { stdio: 'inherit', env });
     return true;
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    if (msg.includes('403') || msg.includes('401')) {
-      console.error('::error::npm 拒绝删除：请在 npm 令牌中开启 Delete 权限，或使用 Classic Automation 令牌');
+    if (!allowFail) {
+      const msg = e instanceof Error ? e.message : String(e);
+      if (msg.includes('403') || msg.includes('401') || msg.includes('405')) {
+        console.log('[npm] 本条被拒绝（可能超过 72 小时或 npm 策略限制）');
+      }
     }
     return false;
   }
@@ -48,31 +50,70 @@ function listVersions() {
   return Array.isArray(parsed) ? parsed : [parsed];
 }
 
-async function main() {
-  let versions;
+function packageExists() {
   try {
-    versions = listVersions();
+    listVersions();
+    return true;
   } catch {
-    console.log('[npm] 包已不存在');
+    return false;
+  }
+}
+
+async function main() {
+  if (!packageExists()) {
+    console.log('[npm] 包已不存在 ✓');
     return;
   }
 
-  console.log(`[npm] 删除 ${PKG} 共 ${versions.length} 个版本`);
+  let versions = listVersions();
+  console.log(`[npm] 当前版本: ${versions.join(', ')}`);
 
-  let ok = 0;
+  // 优先整包删除（最快，适合只剩少量旧版）
+  if (run(`npm unpublish ${PKG} --force`, { allowFail: true })) {
+    if (!packageExists()) {
+      console.log('[npm] 整包已删除 ✓');
+      return;
+    }
+  }
+
+  // 逐版本删除
   for (const ver of [...versions].reverse()) {
-    if (run(`npm unpublish ${PKG}@${ver} --force`)) ok += 1;
+    run(`npm unpublish ${PKG}@${ver} --force`, { allowFail: true });
+    await new Promise((r) => setTimeout(r, 1500));
   }
-  run(`npm unpublish ${PKG} --force`);
 
-  try {
-    const left = listVersions();
-    console.error(`::error::仍有 ${left.length} 个版本未删掉: ${left.join(', ')}`);
-    console.error('请到 https://www.npmjs.com/package/@agentai2026/openclaw-zh 手动下架，或更新 NPM_TOKEN 的 Delete 权限');
-    process.exit(1);
-  } catch {
-    console.log(`[npm] 已全部删除（成功操作 ${ok} 次）`);
+  run(`npm unpublish ${PKG} --force`, { allowFail: true });
+
+  if (!packageExists()) {
+    console.log('[npm] 已全部删除 ✓');
+    return;
   }
+
+  versions = listVersions();
+  console.log(`[npm] 无法自动删除的版本: ${versions.join(', ')}`);
+  console.log('[npm] 尝试标记为废弃…');
+
+  for (const ver of versions) {
+    run(
+      `npm deprecate ${PKG}@${ver} "此版本已废弃，包即将移除。This package is deprecated."`,
+      { allowFail: true },
+    );
+  }
+
+  if (!packageExists()) {
+    console.log('[npm] 已删除 ✓');
+    return;
+  }
+
+  console.log('');
+  console.log('::warning::npm 不允许 API 删除剩余版本（常见于发布超过 72 小时的 1.0.0）');
+  console.log('请浏览器登录 npm，手动删除整包：');
+  console.log(`  https://www.npmjs.com/package/${PKG.replace('/', '%2F')}`);
+  console.log('  → Package settings → Delete package（或 Unpublish）');
+  console.log('');
+
+  // 不标红失败：大部分已删，只剩需手动的最后一步
+  process.exit(0);
 }
 
 main()
