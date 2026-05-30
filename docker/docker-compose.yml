@@ -1,0 +1,27 @@
+# OpenClaw 汉化版 - Docker Compose 示例
+# 使用: docker compose -f docker/docker-compose.yml up -d
+
+services:
+  openclaw-zh:
+    image: agentai2027/openclaw-zh:latest
+    container_name: openclaw-zh
+    restart: unless-stopped
+    ports:
+      - "18789:18789"
+    environment:
+      NODE_ENV: production
+      # 按需配置 API Key、频道 Token 等
+      # OPENCLAW_CONFIG: /data/config.json
+    volumes:
+      - openclaw-data:/data
+      - openclaw-config:/root/.openclaw
+    healthcheck:
+      test: ["CMD", "node", "-e", "process.exit(0)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  openclaw-data:
+  openclaw-config:

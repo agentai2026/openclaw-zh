@@ -1,0 +1,12 @@
+{
+  "_meta": {
+    "description": "配置文件注释与说明翻译",
+    "locale": "zh-CN",
+    "count": 5
+  },
+  "Gateway port for HTTP/WebSocket": "网关 HTTP/WebSocket 监听端口",
+  "Enable debug logging": "启用调试日志",
+  "Default model provider": "默认模型提供商",
+  "Path to agent workspace": "智能体工作区路径",
+  "Telegram bot token (keep secret)": "Telegram 机器人 Token（请保密）"
+}

@@ -1,0 +1,161 @@
+# ============================================================
+# OpenClaw 汉化版 (openclaw-zh) - 每小时自动同步与发行
+# 仓库: https://github.com/agentai2026/openclaw-zh
+# ============================================================
+# 流程: 同步上游 -> 汉化替换 -> 版本号 -> 构建 -> npm + Docker
+# ============================================================
+
+name: 自动同步与发行
+
+on:
+  schedule:
+  # 每小时整点 (UTC)
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22'
+  NPM_PACKAGE: '@agentai2026/openclaw-zh'
+  DOCKER_IMAGE: agentai2027/openclaw-zh
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+
+      - name: 配置 Git
+        run: |
+          git config user.name "openclaw-zh-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "${{ secrets.PAT }}" ]; then
+            git remote set-url origin "https://x-access-token:${{ secrets.PAT }}@github.com/agentai2026/openclaw-zh.git"
+            echo "[git] 状态：已使用 PAT 配置 origin（推送权限）"
+          else
+            echo "[git] 状态：使用默认 GITHUB_TOKEN"
+          fi
+          echo "[git] 状态：Git 用户已配置"
+
+      - name: 同步上游 openclaw
+        run: node scripts/sync-upstream.js
+
+      - name: 获取上游官方版本号
+        id: upstream_ver
+        run: |
+          set -e
+          if git show upstream/main:package.json > /tmp/upstream-pkg.json 2>/dev/null; then
+            VER=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/upstream-pkg.json','utf8')).version)")
+          else
+            VER=$(curl -fsSL https://registry.npmjs.org/openclaw/latest | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).version))")
+          fi
+          echo "official_version=$VER" >> "$GITHUB_OUTPUT"
+          echo "[upstream] 状态：官方版本 $VER"
+
+      - name: 应用汉化替换
+        run: node scripts/apply-i18n.js
+
+      - name: 更新汉化版版本号
+        id: version
+        run: node scripts/bump-version.js
+        env:
+          UPSTREAM_VERSION: ${{ steps.upstream_ver.outputs.official_version }}
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 启用 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: 安装依赖并构建
+        run: |
+          echo "[build] 状态：开始安装依赖"
+          if [ -f pnpm-lock.yaml ]; then
+            pnpm install --frozen-lockfile || pnpm install
+            pnpm run build || npm run build
+          elif [ -f package-lock.json ]; then
+            npm ci || npm install
+            npm run build
+          else
+            echo "[build] 状态：尚无上游 lockfile，跳过完整构建（首次同步后将有）"
+          fi
+        continue-on-error: true
+
+      - name: 发布到 npm
+        run: |
+          PKG_VER=$(node -p "require('./package.json').version")
+          echo "[npm] 状态：准备发布 ${PKG_VER}"
+          if npm view "${{ env.NPM_PACKAGE }}@${PKG_VER}" version 2>/dev/null; then
+            echo "[npm] 状态：版本 ${PKG_VER} 已存在，优雅跳过"
+            exit 0
+          fi
+          set +e
+          npm publish --access public 2>&1 | tee /tmp/npm-publish.log
+          CODE=$?
+          set -e
+          if [ "$CODE" -eq 0 ]; then
+            echo "[npm] 状态：发布成功"
+            exit 0
+          fi
+          if grep -qiE "EPUBLISHCONFLICT|cannot publish over|already exists|403 Forbidden" /tmp/npm-publish.log; then
+            echo "[npm] 状态：版本冲突或已存在，优雅跳过"
+            exit 0
+          fi
+          echo "[npm] 状态：发布失败"
+          cat /tmp/npm-publish.log
+          exit 1
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录 Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: agentai2027
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 构建并推送 Docker 镜像
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:latest
+            ${{ env.DOCKER_IMAGE }}:nightly
+            ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+
+      - name: 提交汉化与版本变更
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "[commit] 状态：无汉化相关变更，跳过提交"
+            exit 0
+          fi
+          git add -A
+          git commit -m "i18n: $(date -u +%Y-%m-%d-%H:%M) 汉化与版本更新" || true
+          git push origin main || git push origin main --force-with-lease
+
+      - name: 构建摘要
+        run: |
+          VER=$(node -p "require('./package.json').version")
+          echo "## OpenClaw 汉化版发行摘要" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| 项目 | 值 |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|-----|" >> $GITHUB_STEP_SUMMARY
+          echo "| 汉化版版本 | \`${VER}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| 上游版本 | \`${{ steps.upstream_ver.outputs.official_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| npm | \`npm i -g ${{ env.NPM_PACKAGE }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker | \`docker pull ${{ env.DOCKER_IMAGE }}:latest\` |" >> $GITHUB_STEP_SUMMARY
