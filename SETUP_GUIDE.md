@@ -10,7 +10,7 @@
 |------|------|
 | `NPM_TOKEN` | npm 发布令牌（Automation） |
 | `DOCKER_PASSWORD` | Docker Hub 密码（账号 **agentai2027**） |
-| `PAT` | 可选，用于推送 `.github/last-build.json` |
+| `PAT` | **必填**（Classic：`repo` + `workflow`）。用于推送 `last-build.json`、**删除 Actions 记录**（`GITHUB_TOKEN` 删记录会 403） |
 
 ## 工作流
 
