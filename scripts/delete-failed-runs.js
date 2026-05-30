@@ -2,14 +2,15 @@
 /**
  * 批量删除 GitHub Actions 失败/取消/跳过的运行记录
  * 用法: PAT=ghp_xxx node scripts/delete-failed-runs.js
- * 或:   GITHUB_TOKEN=xxx node scripts/delete-failed-runs.js
  */
 
 const OWNER = 'agentai2026';
 const REPO = 'openclaw-zh';
 const STATUSES = ['failure', 'cancelled', 'skipped'];
+/** 额外清空这些工作流下的失败记录（含 Dependabot 内置工作流） */
+const EXTRA_WORKFLOW_NAMES = ['Dependabot Updates'];
 const PER_PAGE = 100;
-const DELAY_MS = 200;
+const DELAY_MS = 150;
 
 const token = process.env.PAT || process.env.GITHUB_TOKEN;
 if (!token) {
@@ -34,7 +35,7 @@ async function api(path, method = 'GET') {
       'X-GitHub-Api-Version': '2022-11-28',
     },
   });
-  if (method === 'DELETE' && res.status === 204) {
+  if (method === 'DELETE' && (res.status === 204 || res.status === 200)) {
     return null;
   }
   if (!res.ok) {
@@ -44,9 +45,17 @@ async function api(path, method = 'GET') {
   return res.json();
 }
 
-async function listRuns(status, page) {
-  const q = new URLSearchParams({ status, per_page: String(PER_PAGE), page: String(page) });
+async function listRunsByStatus(status) {
+  const q = new URLSearchParams({ status, per_page: String(PER_PAGE), page: '1' });
   const data = await api(`/repos/${OWNER}/${REPO}/actions/runs?${q}`);
+  return data.workflow_runs ?? [];
+}
+
+async function listWorkflowRuns(workflowId, status) {
+  const q = new URLSearchParams({ status, per_page: String(PER_PAGE), page: '1' });
+  const data = await api(
+    `/repos/${OWNER}/${REPO}/actions/workflows/${workflowId}/runs?${q}`,
+  );
   return data.workflow_runs ?? [];
 }
 
@@ -54,11 +63,11 @@ async function deleteRun(runId) {
   await api(`/repos/${OWNER}/${REPO}/actions/runs/${runId}`, 'DELETE');
 }
 
-async function purgeStatus(status) {
-  let page = 1;
+/** 始终只拉第 1 页，删完一条后面会顶上来，直到为空 */
+async function purgeByFetcher(fetcher, label) {
   let deleted = 0;
   while (true) {
-    const runs = await listRuns(status, page);
+    const runs = await fetcher();
     if (runs.length === 0) {
       break;
     }
@@ -66,27 +75,53 @@ async function purgeStatus(status) {
       try {
         await deleteRun(run.id);
         deleted += 1;
-        log(`已删除 #${run.run_number} ${run.name} (${status}) id=${run.id}`);
+        log(`已删除 [${label}] #${run.run_number} ${run.display_title ?? run.name} id=${run.id}`);
         await sleep(DELAY_MS);
       } catch (err) {
         log(`跳过 id=${run.id}: ${err instanceof Error ? err.message : err}`);
       }
     }
-    if (runs.length < PER_PAGE) {
-      break;
+  }
+  return deleted;
+}
+
+async function purgeGlobalStatus(status) {
+  return purgeByFetcher(() => listRunsByStatus(status), `global:${status}`);
+}
+
+async function listAllWorkflows() {
+  const data = await api(`/repos/${OWNER}/${REPO}/actions/workflows?per_page=100`);
+  return data.workflows ?? [];
+}
+
+async function purgeNamedWorkflows() {
+  const workflows = await listAllWorkflows();
+  let deleted = 0;
+  for (const name of EXTRA_WORKFLOW_NAMES) {
+    const wf = workflows.find((w) => w.name === name || w.path.includes('dependabot'));
+    if (!wf) {
+      log(`未找到工作流: ${name}`);
+      continue;
     }
-    page += 1;
+    log(`清理工作流「${wf.name}」id=${wf.id}`);
+    for (const status of STATUSES) {
+      deleted += await purgeByFetcher(
+        () => listWorkflowRuns(wf.id, status),
+        `${wf.name}:${status}`,
+      );
+    }
   }
   return deleted;
 }
 
 async function main() {
-  log(`开始清理 ${OWNER}/${REPO} 的 Actions 记录...`);
+  log(`开始清理 ${OWNER}/${REPO} ...`);
   let total = 0;
   for (const status of STATUSES) {
-    log(`处理 status=${status}`);
-    total += await purgeStatus(status);
+    log(`全仓库 status=${status}`);
+    total += await purgeGlobalStatus(status);
   }
+  total += await purgeNamedWorkflows();
   log(`完成，共删除 ${total} 条记录`);
 }
 

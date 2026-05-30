@@ -20,7 +20,8 @@ const SYNC_REF_FILE = '.github/upstream-sync-ref';
 const BACKUP_DIR = '.sync-overlay-backup';
 
 const PROTECTED_PATHS = [
-  '.github/workflows/',
+  '.github/workflows/release.yml',
+  '.github/workflows/cleanup-runs.yml',
   'scripts/',
   'i18n/',
   'patches/',
@@ -218,6 +219,9 @@ async function main() {
   await run('git', ['reset', '--hard', `${UPSTREAM_REMOTE}/${UPSTREAM_BRANCH}`]);
   await restoreProtectedFromBackup();
   await writeSyncedUpstreamRef(upstreamRef);
+
+  // 官方 dependabot 配置会触发大量无关 PR/Actions，汉化发行版不需要
+  await rm('.github/dependabot.yml', { force: true }).catch(() => {});
 
   await rm(BACKUP_DIR, { recursive: true, force: true });
 
