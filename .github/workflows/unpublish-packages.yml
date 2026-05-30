@@ -5,15 +5,28 @@ on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: '输入 DELETE 确认删除 npm 与 Docker 全部版本'
+        description: '必须输入大写 DELETE 后点 Run'
         required: true
         type: string
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   unpublish:
     runs-on: ubuntu-latest
-    if: github.event.inputs.confirm == 'DELETE'
+    timeout-minutes: 15
     steps:
+      - name: 确认操作
+        run: |
+          C="${{ github.event.inputs.confirm }}"
+          C="$(echo "$C" | tr -d '[:space:]')"
+          if [ "$C" != "DELETE" ]; then
+            echo "::error::未确认。请点右侧 Run workflow，在 confirm 框输入 DELETE（全大写）"
+            exit 1
+          fi
+          echo "已确认删除"
+
       - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v5
@@ -33,10 +46,6 @@ jobs:
         run: bash scripts/delete-docker-tags.sh
 
       - name: 完成
-        run: echo "已执行删除。npm: https://www.npmjs.com/package/@agentai2026/openclaw-zh"
-
-  rejected:
-    runs-on: ubuntu-latest
-    if: github.event.inputs.confirm != 'DELETE'
-    steps:
-      - run: echo "::error::未确认：请在 confirm 输入框填写 DELETE"
+        run: |
+          echo "npm 与 Docker 删除步骤已执行"
+          echo "本地验证: npm view @agentai2026/openclaw-zh 应 404"

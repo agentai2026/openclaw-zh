@@ -18,7 +18,7 @@ TOKEN=$(curl -fsSL -X POST -H "Content-Type: application/json" \
   https://hub.docker.com/v2/users/login/ | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).token))")
 
 PAGE=1
-while true;
+while true; do
   RESP=$(curl -fsSL -H "Authorization: JWT $TOKEN" \
     "https://hub.docker.com/v2/repositories/${USER}/${REPO}/tags/?page_size=100&page=$PAGE")
   COUNT=$(echo "$RESP" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);console.log((j.results||[]).length)})")
