@@ -150,6 +150,16 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: 检查 npm 登录身份
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::未配置 NPM_TOKEN"
+            exit 1
+          fi
+          echo "[npm] whoami: $(npm whoami --registry=https://registry.npmjs.org/)"
+
       - name: 发布 npm
         working-directory: openclaw
         env:
