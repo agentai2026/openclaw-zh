@@ -1,0 +1,4 @@
+跑完后若 Actions 有红色失败，把失败 job 的日志（或截图）发我，我帮你看。成功的话可在这些地址验证：
+
+npm：https://www.npmjs.com/package/@agentai2026/openclaw-zh
+Docker：https://hub.docker.com/r/agentai2027/openclaw-zh
