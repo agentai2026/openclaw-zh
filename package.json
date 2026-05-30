@@ -34,9 +34,10 @@
   "main": "openclaw.mjs",
   "scripts": {
     "sync": "node scripts/sync-upstream.js",
+    "package:zh": "node scripts/apply-package-zh.js",
     "i18n": "node scripts/apply-i18n.js",
     "version:bump": "node scripts/bump-version.js",
-    "release:local": "node scripts/sync-upstream.js && node scripts/apply-i18n.js && node scripts/bump-version.js",
+    "release:local": "node scripts/sync-upstream.js && node scripts/apply-package-zh.js && node scripts/apply-i18n.js && node scripts/bump-version.js",
     "build": "pnpm run build:openclaw",
     "build:openclaw": "node -e \"console.log('[build] 请在 CI 或完整克隆后执行 pnpm run build')\""
   },

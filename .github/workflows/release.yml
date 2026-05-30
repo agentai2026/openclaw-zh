@@ -50,6 +50,7 @@ jobs:
         id: upstream_ver
         run: |
           set -e
+          git fetch https://github.com/openclaw/openclaw.git main 2>/dev/null || true
           if git show upstream/main:package.json > /tmp/upstream-pkg.json 2>/dev/null; then
             VER=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/upstream-pkg.json','utf8')).version)")
           else
@@ -57,6 +58,9 @@ jobs:
           fi
           echo "official_version=$VER" >> "$GITHUB_OUTPUT"
           echo "[upstream] 状态：官方版本 $VER"
+
+      - name: 合并汉化 package.json 元数据
+        run: node scripts/apply-package-zh.js
 
       - name: 应用汉化替换
         run: node scripts/apply-i18n.js
@@ -76,21 +80,31 @@ jobs:
       - name: 启用 pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          run_install: false
 
       - name: 安装依赖并构建
         run: |
+          set -e
           echo "[build] 状态：开始安装依赖"
+          corepack enable
+          if [ -f package.json ]; then
+            node -e "
+              const p=require('./package.json');
+              if (p.packageManager) console.log('[build] packageManager:', p.packageManager);
+            "
+          fi
           if [ -f pnpm-lock.yaml ]; then
-            pnpm install --frozen-lockfile || pnpm install
-            pnpm run build || npm run build
+            echo "[build] 使用 pnpm install --no-frozen-lockfile（避免 overrides 与 lockfile 不一致）"
+            pnpm install --no-frozen-lockfile
+            pnpm run build
           elif [ -f package-lock.json ]; then
             npm ci || npm install
             npm run build
           else
-            echo "[build] 状态：尚无上游 lockfile，跳过完整构建（首次同步后将有）"
+            echo "[build] 状态：无 lockfile，跳过构建"
+            exit 0
           fi
-        continue-on-error: true
+          echo "[build] 状态：构建完成"
 
       - name: 发布到 npm
         run: |

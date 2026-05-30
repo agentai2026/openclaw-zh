@@ -27,7 +27,6 @@ const PROTECTED_PATHS = [
   'docker/',
   'deploy/',
   'README.md',
-  'package.json',
 ];
 
 const FETCH_MAX_RETRIES = 3;
