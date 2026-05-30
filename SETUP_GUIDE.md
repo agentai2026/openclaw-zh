@@ -69,6 +69,19 @@ git clone https://github.com/openclaw/openclaw.git openclaw
 node cli/index.mjs apply --target=./openclaw
 ```
 
+## 删除已发布的 npm / Docker（不可恢复）
+
+Actions → **删除已发布包** → Run workflow → 在 `confirm` 里输入 **`DELETE`**。
+
+需要 Secrets：`NPM_TOKEN`（需能 **删除/下架** 包）、`DOCKER_PASSWORD`。
+
+本地：
+
+```bash
+NPM_TOKEN=npm_xxx node scripts/unpublish-npm-all.js
+DOCKER_PASSWORD=xxx bash scripts/delete-docker-tags.sh
+```
+
 ## 安装
 
 ```bash

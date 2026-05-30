@@ -1,0 +1,42 @@
+# 手动删除已发布的 npm 包版本 + Docker 镜像标签（不可恢复，慎用）
+name: 删除已发布包
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: '输入 DELETE 确认删除 npm 与 Docker 全部版本'
+        required: true
+        type: string
+
+jobs:
+  unpublish:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm == 'DELETE'
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 删除 npm 全部版本
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: node scripts/unpublish-npm-all.js
+
+      - name: 删除 Docker 全部标签
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_USER: agentai2027
+        run: bash scripts/delete-docker-tags.sh
+
+      - name: 完成
+        run: echo "已执行删除。npm: https://www.npmjs.com/package/@agentai2026/openclaw-zh"
+
+  rejected:
+    runs-on: ubuntu-latest
+    if: github.event.inputs.confirm != 'DELETE'
+    steps:
+      - run: echo "::error::未确认：请在 confirm 输入框填写 DELETE"
