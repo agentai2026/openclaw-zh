@@ -27,7 +27,10 @@ const STATUSES = [
   'action_required',
 ];
 
-const token = process.env.PAT;
+const token = (process.env.PAT || '').trim();
+const CURRENT_RUN_ID = process.env.GITHUB_RUN_ID
+  ? Number(process.env.GITHUB_RUN_ID)
+  : null;
 if (!token) {
   console.error(
     '[error] 必须设置环境变量 PAT（仓库所有者 Classic PAT：repo + workflow，或 Fine-grained：Actions Read/Write）',
@@ -95,6 +98,10 @@ async function purgeStatus(status) {
     const runs = await listRuns(status);
     if (runs.length === 0) break;
     for (const run of runs) {
+      if (CURRENT_RUN_ID && run.id === CURRENT_RUN_ID) {
+        log(`跳过当前运行 id=${run.id}`);
+        continue;
+      }
       try {
         if (['queued', 'in_progress', 'waiting', 'pending', 'requested'].includes(run.status)) {
           await cancelRun(run.id);
@@ -127,12 +134,16 @@ async function probeDeletePermission() {
   if (runs.length === 0) {
     return { empty: true, probeDeleted: 0 };
   }
-  const run = runs[0];
+  const run = runs.find(
+    (r) =>
+      !(CURRENT_RUN_ID && r.id === CURRENT_RUN_ID) &&
+      !['queued', 'in_progress', 'waiting', 'pending', 'requested'].includes(r.status),
+  );
+  if (!run) {
+    log('仅有当前/进行中运行，跳过探针删除');
+    return { empty: false, probeDeleted: 0 };
+  }
   try {
-    if (['queued', 'in_progress', 'waiting', 'pending', 'requested'].includes(run.status)) {
-      await cancelRun(run.id);
-      await sleep(80);
-    }
     await deleteRun(run.id);
     log(`权限检查通过，已删除探针记录 #${run.run_number} id=${run.id}`);
     return { empty: false, probeDeleted: 1 };
@@ -148,7 +159,8 @@ async function probeDeletePermission() {
 `);
       process.exit(1);
     }
-    throw err;
+    log(`探针删除失败，继续批量删除: ${err instanceof Error ? err.message : err}`);
+    return { empty: false, probeDeleted: 0 };
   }
 }
 

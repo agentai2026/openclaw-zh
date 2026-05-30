@@ -12,7 +12,10 @@ const EXTRA_WORKFLOW_NAMES = ['Dependabot Updates'];
 const PER_PAGE = 100;
 const DELAY_MS = 150;
 
-const token = process.env.PAT;
+const token = (process.env.PAT || '').trim();
+const CURRENT_RUN_ID = process.env.GITHUB_RUN_ID
+  ? Number(process.env.GITHUB_RUN_ID)
+  : null;
 if (!token) {
   console.error('[error] 请设置环境变量 PAT（Classic：repo + workflow）');
   process.exit(1);
@@ -72,6 +75,7 @@ async function purgeByFetcher(fetcher, label) {
       break;
     }
     for (const run of runs) {
+      if (CURRENT_RUN_ID && run.id === CURRENT_RUN_ID) continue;
       try {
         await deleteRun(run.id);
         deleted += 1;
