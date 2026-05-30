@@ -72,7 +72,7 @@ jobs:
           UPSTREAM_VERSION: ${{ steps.upstream_ver.outputs.official_version }}
 
       - name: 设置 Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           registry-url: 'https://registry.npmjs.org'
