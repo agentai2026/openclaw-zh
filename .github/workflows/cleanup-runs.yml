@@ -1,8 +1,11 @@
-# 手动清理失败的 Actions 记录（一次性或偶尔使用）
-name: 清理失败的工作流记录
+# 手动删除本仓库全部 Actions 运行记录
+name: 清理全部 Actions 记录
 
 on:
   workflow_dispatch:
+
+permissions:
+  actions: write
 
 jobs:
   cleanup:
@@ -11,7 +14,8 @@ jobs:
       - name: 检出
         uses: actions/checkout@v4
 
-      - name: 删除 failure / cancelled / skipped 记录
+      - name: 删除全部运行记录
         env:
-          PAT: ${{ secrets.PAT }}
-        run: node scripts/delete-failed-runs.js
+          PAT: ${{ secrets.PAT || github.token }}
+          GITHUB_TOKEN: ${{ secrets.PAT || github.token }}
+        run: node scripts/delete-all-runs.js
