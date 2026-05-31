@@ -75,7 +75,6 @@ jobs:
         run: |
           node scripts/apply-package-zh.js
           node scripts/apply-i18n.js
-          node scripts/apply-feature-panel.mjs
           OPENCLAW_TARGET=openclaw UPSTREAM_VERSION=${{ env.UPSTREAM_VERSION }} \
             FORCE_REVISION=${{ github.event.inputs.force_revision == 'true' && '1' || '' }} \
             node scripts/bump-openclaw-version.js

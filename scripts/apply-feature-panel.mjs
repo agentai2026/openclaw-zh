@@ -7,7 +7,6 @@ import { join, dirname } from 'node:path';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolveOpenClawTarget, OVERLAY_ROOT } from './paths.mjs';
-import { buildFeaturePanelJs } from './build-feature-panel.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PANEL_SRC = join(OVERLAY_ROOT, 'overlay', 'panel');
@@ -25,8 +24,17 @@ export async function applyFeaturePanel(targetDir = resolveOpenClawTarget(), opt
   }
 
   const data = await readFile(join(PANEL_SRC, 'panel-data.json'), 'utf8');
-  let js = await buildFeaturePanelJs();
-  js = js.replace('/*__PANEL_DATA__*/ {};', data.trim());
+  const panelJsPath = join(PANEL_SRC, 'feature-panel.js');
+  if (!existsSync(panelJsPath)) {
+    console.error('[feature-panel] 缺少 overlay/panel/feature-panel.js');
+    process.exit(1);
+  }
+  let js = await readFile(panelJsPath, 'utf8');
+  if (!js.includes('/*__PANEL_DATA__*/')) {
+    console.error('[feature-panel] feature-panel.js 缺少 /*__PANEL_DATA__*/ 占位符');
+    process.exit(1);
+  }
+  js = js.replace('/*__PANEL_DATA__*/ {}', data.trim());
 
   if (!dryRun) {
     await mkdir(publicDir, { recursive: true });

@@ -111,7 +111,6 @@ jobs:
           git clone --depth 1 https://github.com/${{ env.UPSTREAM_REPO }}.git openclaw
           node scripts/apply-package-zh.js
           node scripts/apply-i18n.js
-          node scripts/apply-feature-panel.mjs
           OPENCLAW_TARGET=openclaw UPSTREAM_VERSION=${{ needs.check-upstream.outputs.upstream_version }} \
             node scripts/bump-openclaw-version.js
 
