@@ -1,8 +1,9 @@
 {
   "file": "ui/src/ui/app-render.ts",
-  "description": "Dashboard 侧栏品牌与仓库链接",
+  "description": "Dashboard 侧栏品牌、汉化版官网与仓库链接",
   "replacements": {
     "<span class=\"sidebar-brand__title\">OpenClaw</span>": "<span class=\"sidebar-brand__title\">OpenClaw 汉化版</span>",
+    "                </a>\n                <div class=\"sidebar-mode-switch\">${renderTopbarThemeModeToggle(state)}</div>": "                </a>\n                <a\n                  class=\"nav-item nav-item--external sidebar-utility-link\"\n                  href=\"https://agentai2026.github.io/my-website/\"\n                  target=${EXTERNAL_LINK_TARGET}\n                  rel=${buildExternalLinkRel()}\n                  title=\"汉化版官网\"\n                >\n                  <span class=\"nav-item__icon\" aria-hidden=\"true\">${icons.globe}</span>\n                  ${!navCollapsed\n                    ? html`\n                        <span class=\"nav-item__text\">汉化版官网</span>\n                        <span class=\"nav-item__external-icon\">${icons.externalLink}</span>\n                      `\n                    : nothing}\n                </a>\n                <div class=\"sidebar-mode-switch\">${renderTopbarThemeModeToggle(state)}</div>",
     "</div>\n          </div>\n        </aside>": "</div>\n          <div class=\"sidebar-footer__zh-links\" style=\"display:flex;gap:6px;padding:6px 12px;flex-wrap:wrap;border-top:1px solid var(--border);margin-top:4px;\">\n            <a href=\"https://github.com/agentai2026/openclaw-zh\" target=\"_blank\" rel=\"noreferrer\" title=\"汉化版仓库\" style=\"display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:var(--radius-sm);font-size:12px;color:var(--muted);background:var(--surface-hover);text-decoration:none;white-space:nowrap;\">${icons.link} GitHub</a>\n          </div>\n        </div>\n      </aside>"
   }
 }
