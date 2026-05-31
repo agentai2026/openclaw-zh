@@ -1,0 +1,6 @@
+{
+  "follow_upstream": true,
+  "bootstrap_target_count": 20,
+  "bootstrap_versions_file": ".github/bootstrap-versions.json",
+  "note": "批量首发完成后将 follow_upstream 设为 false，定时发布将不再自动跟官方新版本。"
+}

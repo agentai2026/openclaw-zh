@@ -1,0 +1,70 @@
+# 一次性 npm 首发：顺序构建官方最近 20 个稳定版，完成后关闭自动跟官方
+name: 批量首发（20 版）
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_npm:
+        description: 发布到 npm
+        required: false
+        default: true
+        type: boolean
+      publish_docker:
+        description: 仅最后一版推 Docker（其余只发 npm，省时间）
+        required: false
+        default: false
+        type: boolean
+      skip_policy_lock:
+        description: 完成后仍保持 follow_upstream=true（不推荐）
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: openclaw-zh-batch-bootstrap
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: write
+
+env:
+  NPM_PACKAGE: '@agentai2026/openclaw-zh'
+  BOOTSTRAP_VERSIONS_FILE: .github/bootstrap-versions.json
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1440
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PAT || github.token }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: 安装 GitHub CLI
+        run: |
+          type -p gh >/dev/null || sudo apt-get update && sudo apt-get install -y gh
+          gh --version
+
+      - name: 顺序构建并发布 20 个汉化版
+        env:
+          GH_TOKEN: ${{ secrets.PAT || github.token }}
+          GITHUB_TOKEN: ${{ secrets.PAT || github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PUBLISH_NPM: ${{ github.event.inputs.publish_npm }}
+          PUBLISH_DOCKER: ${{ github.event.inputs.publish_docker }}
+          RELEASE_NOTE: npm 首发批量汉化（20 版之一）
+        run: node scripts/ci-batch-bootstrap.mjs
+
+      - name: 提交「停止跟官方」策略（除非勾选跳过）
+        if: github.event.inputs.skip_policy_lock != 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/release-policy.json
+          git diff --staged --quiet || git commit -m "chore: 完成 npm 首发 20 版，关闭自动跟官方"
+          git push

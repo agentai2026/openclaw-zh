@@ -72,7 +72,30 @@ function inCooldown(unpublishedAt) {
   return { inCooldown: Date.now() < retryAfter.getTime(), retryAfter };
 }
 
+function followUpstreamEnabled() {
+  const policy = readJson('.github/release-policy.json', null);
+  if (policy && policy.follow_upstream === false) {
+    console.log('[check] release-policy: follow_upstream=false，跳过自动跟官方');
+    return false;
+  }
+  return true;
+}
+
 async function main() {
+  if (!followUpstreamEnabled()) {
+    const { upstream_version, upstream_sha } = await fetchUpstream();
+    out('upstream_version', upstream_version);
+    out('upstream_sha', upstream_sha);
+    out('has_upstream_changes', 'false');
+    out('in_npm_cooldown', 'false');
+    out('npm_retry_after', '');
+    out('publish_pending', 'false');
+    out('need_build', 'false');
+    out('need_publish', 'false');
+    out('wait_cooldown', 'false');
+    return;
+  }
+
   const { upstream_version, upstream_sha } = await fetchUpstream();
   const lastBuild = readJson('.github/last-build.json', {});
   const pending = readJson('.github/publish-pending.json', null);

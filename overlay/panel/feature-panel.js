@@ -173,27 +173,27 @@
         <button class="command-btn" data-action="restart">
           ${ICONS.refresh}
           <span>重启网关</span>
-          <span class="command-desc">重启 OpenClaw Gateway</span>
+          <span class="command-desc">已连接时一键重启；未连接则复制终端命令</span>
         </button>
         <button class="command-btn" data-action="clear-cache">
           ${ICONS.trash}
           <span>清理缓存</span>
-          <span class="command-desc">清理临时文件和缓存</span>
+          <span class="command-desc">说明如何清理（需在本机终端操作）</span>
         </button>
         <button class="command-btn" data-action="check-update">
           ${ICONS.download}
           <span>检测更新</span>
-          <span class="command-desc">检查汉化版 npm 是否有新版本</span>
+          <span class="command-desc">在线查询 npm 最新汉化版并对比当前版本</span>
         </button>
         <button class="command-btn" data-action="restore-original">
           ${ICONS.undo}
           <span>恢复原版</span>
-          <span class="command-desc">切换回官方 openclaw 包</span>
+          <span class="command-desc">复制切换官方包的命令（需在终端执行）</span>
         </button>
         <button class="command-btn" data-action="fix-common" style="grid-column: span 2;">
           ${ICONS.wrench}
           <span>一键修复常见问题</span>
-          <span class="command-desc">复制 doctor --fix 命令到剪贴板，粘贴到终端执行</span>
+          <span class="command-desc">复制 doctor --fix 到剪贴板（需在终端执行）</span>
         </button>
       </div>
     `;
@@ -569,29 +569,119 @@
     }
   }
 
-  // 执行快捷指令
+  const NPM_ZH_PACKAGE = '@agentai2026/openclaw-zh';
+
+  function getOpenClawApp() {
+    return document.querySelector('openclaw-app');
+  }
+
+  function getGatewayClient() {
+    const app = getOpenClawApp();
+    if (!app?.connected || !app.client) return null;
+    return app.client;
+  }
+
+  function currentInstalledVersion() {
+    const app = getOpenClawApp();
+    const v = app?.serverVersion || app?.hello?.version;
+    return typeof v === 'string' && v.trim() ? v.trim() : null;
+  }
+
+  async function fetchLatestZhVersion() {
+    const res = await fetch(
+      `https://registry.npmjs.org/${encodeURIComponent(NPM_ZH_PACKAGE)}/latest`,
+      { headers: { Accept: 'application/json' } },
+    );
+    if (!res.ok) throw new Error(`npm 查询失败 (${res.status})`);
+    const json = await res.json();
+    return json.version || null;
+  }
+
+  // 执行快捷指令（能直连网关的走 API，其余复制终端命令）
   async function executeCommand(action) {
     showToast('正在处理...', 'info');
 
     switch (action) {
-      case 'restart':
-        copyToClipboard('openclaw gateway restart');
-        showToast('已复制：openclaw gateway restart', 'success');
+      case 'restart': {
+        if (
+          typeof globalThis.confirm === 'function' &&
+          !globalThis.confirm('确定要重启网关吗？进行中的任务可能会稍后再完成。')
+        ) {
+          showToast('已取消', 'info');
+          return;
+        }
+        const client = getGatewayClient();
+        if (client) {
+          try {
+            const result = await client.request('gateway.restart.request', {
+              reason: 'openclaw-zh-feature-panel',
+            });
+            const status = result?.status || 'scheduled';
+            showToast(`已请求重启网关（${status}）`, 'success');
+          } catch (err) {
+            await copyToClipboard('openclaw gateway restart');
+            showToast(
+              `网关调用失败，已复制终端命令：${err?.message || err}`,
+              'info',
+            );
+          }
+          return;
+        }
+        await copyToClipboard('openclaw gateway restart');
+        showToast('控制台未连接网关，已复制终端命令', 'info');
         break;
+      }
       case 'clear-cache':
-        showToast('请在终端执行: openclaw doctor（或删除 ~/.openclaw/cache）', 'info');
+        showToast(
+          '浏览器无法直接删本机缓存。请在 PowerShell 执行：openclaw doctor；或删除用户目录下 .openclaw\\cache',
+          'info',
+        );
         break;
-      case 'check-update':
-        copyToClipboard('npm view @agentai2026/openclaw-zh version');
-        showToast('已复制检测命令，请在终端执行', 'success');
+      case 'check-update': {
+        try {
+          const latest = await fetchLatestZhVersion();
+          const current = currentInstalledVersion();
+          if (!latest) {
+            showToast('未能获取 npm 最新版本', 'error');
+            return;
+          }
+          if (current && latest === current) {
+            showToast(`已是最新：${current}`, 'success');
+            return;
+          }
+          if (current) {
+            showToast(`当前 ${current}，npm 最新 ${latest}`, 'info');
+          } else {
+            showToast(`npm 最新汉化版：${latest}`, 'success');
+          }
+          const client = getGatewayClient();
+          if (client) {
+            try {
+              const st = await client.request('update.status', {});
+              if (st?.available) {
+                showToast('网关报告有可用更新，可在设置页查看', 'info');
+              }
+            } catch {
+              /* 忽略 update.status 不可用 */
+            }
+          }
+        } catch (err) {
+          await copyToClipboard(`npm view ${NPM_ZH_PACKAGE} version`);
+          showToast(`在线检测失败，已复制命令：${err?.message || err}`, 'info');
+        }
         break;
+      }
       case 'restore-original':
-        copyToClipboard('npm uninstall -g @agentai2026/openclaw-zh && npm install -g openclaw');
-        showToast('已复制切换原版命令，请在终端执行', 'success');
+        await copyToClipboard(
+          'npm uninstall -g @agentai2026/openclaw-zh && npm install -g openclaw',
+        );
+        showToast('切换 npm 包只能在终端执行，命令已复制', 'info');
         break;
       case 'fix-common':
-        copyToClipboard('openclaw doctor --fix --non-interactive --yes');
-        showToast('已复制修复命令！请粘贴到终端执行', 'success');
+        await copyToClipboard(
+          'openclaw doctor --fix --non-interactive --yes',
+        );
+        showToast('修复需在本机终端运行，命令已复制', 'info');
         break;
       default:
         showToast('未知操作', 'error');
