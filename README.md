@@ -1,9 +1,7 @@
 <div align="center">
 
-<img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="140" />
-
 # OpenClaw 汉化版
-
+<img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="280" />
 **OpenClaw 中文界面 · 一键安装 · 自动跟进官方更新**
 
 [![npm](https://img.shields.io/npm/v/@agentai2026/openclaw-zh?label=npm)](https://www.npmjs.com/package/@agentai2026/openclaw-zh)

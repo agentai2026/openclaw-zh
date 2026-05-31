@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="96" />
+<img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="192" />
 
 # 维护者配置指南
 
