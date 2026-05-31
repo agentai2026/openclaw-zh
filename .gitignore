@@ -1,6 +1,7 @@
 # CI / 本地克隆的上游（不入库）
 openclaw/
 upstream/
+_ref-oct/
 
 node_modules/
 dist/
