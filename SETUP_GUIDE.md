@@ -1,92 +1,172 @@
-# OpenClaw 汉化版 — 配置指南
+<div align="center">
 
-## GitHub Secrets
+# 维护者配置指南
 
-| 名称 | 说明 |
-|------|------|
-| `NPM_TOKEN` | npm **Classic → Automation** 令牌（见下） |
-| `DOCKER_PASSWORD` | Docker Hub 密码（账号 **agentai2027**） |
-| `PAT` | Classic：`repo` + `workflow`（删 Actions 记录、推送 last-build） |
+**发 npm、配 GitHub 自动打包 — 大白话版**
+
+[返回 README](./README.md)
+
+</div>
 
 ---
 
-## 修复 npm 发布 E403（必做）
+## 📋 目录
 
-日志里若出现：
+- [要准备什么](#-要准备什么)
+- [NPM_TOKEN 怎么弄](#-npm_token-怎么弄)
+- [GitHub 自动任务](#-github-自动任务)
+- [npm 包会不会过期](#-npm-包会不会过期)
+- [删包注意](#-删包注意)
+- [维护清单](#-维护清单)
+- [常见报错](#-常见报错)
 
-```text
-403 Forbidden - bypass 2fa enabled is required to publish packages
-```
+---
 
-说明 **NPM_TOKEN 类型不对**，请严格按下面做（不要用 Publish、不要用只读 token）。
+## 🔑 要准备什么
 
-### 第 1 步：确认 npm 账号能发 `@agentai2026`
+打开仓库密钥页：  
+https://github.com/agentai2026/openclaw-zh/settings/secrets/actions  
 
-1. 浏览器打开 https://www.npmjs.com/settings/agentai2026/packages  
-   （或你的用户名 → Organizations → `agentai2026`）
-2. 必须能登录**拥有该组织/scope 的账号**；若没有组织，先在 npm 创建 org 名 `agentai2026`，或把包名改成你账号下的 scope。
+| Secret 名称 | 填什么 | 干什么 |
+|-------------|--------|--------|
+| `NPM_TOKEN` | npm 发布令牌 | CI 自动 `npm publish` |
+| `DOCKER_PASSWORD` | Docker Hub 密码（用户 **agentai2027**） | 推镜像 |
+| `PAT` | GitHub 个人令牌（可选） | 写回 `last-build.json`、清 Actions 记录 |
 
-### 第 2 步：生成 Classic **Automation** 令牌
+---
+
+## 🔐 NPM_TOKEN 怎么弄
+
+### 选哪种 Token？
+
+| 类型 | 能发包吗 | 建议 |
+|------|----------|------|
+| Classic → **Automation** | ✅ | **首选** |
+| Classic → Publish | ❌ | 容易 403 要 2FA |
+| Granular 细粒度 | ✅ | 需选对包、注意过期 |
+| Read only | ❌ | 只能读 |
+
+### Classic Automation（推荐步骤）
 
 1. https://www.npmjs.com/settings/~/tokens  
-2. **Generate New Token** → **Classic Token**（不要选 Granular，除非你很熟悉）
-3. Token type 一定选 **Automation**（图标/说明里写 For CI/CD）
-4. 复制以 `npm_` 开头的整串（只显示一次）
+2. **Generate New Token** → **Classic Token**  
+3. 类型选 **Automation**  
+4. 复制 `npm_` 开头整串（只显示一次）  
+5. 贴到 GitHub `NPM_TOKEN`，不要空格换行  
 
-| 类型 | CI 能否发布 |
-|------|-------------|
-| **Automation** | 可以（推荐） |
-| Publish | 不行（要 2FA，会 E403） |
-| Read only | 不行 |
+### Granular 只有 90 天怎么办？
 
-### 第 3 步：写入 GitHub Secret
+- 选 **90 days**（或 Custom 能选多远选多远）  
+- **不是包 3 个月就没了**，只是发布密码过期  
+- 日历每 **75 天** 提醒：换新 Token → 更新 Secret → 跑一次「定时发布」  
+- 包权限：`@agentai2026/openclaw-zh` → **Read and write**
 
-1. https://github.com/agentai2026/openclaw-zh/settings/secrets/actions  
-2. 编辑 **NPM_TOKEN** → 粘贴新 token → **Update**  
-3. 不要有多余空格或换行
+### 确认有权发包
 
-### 第 4 步：重新运行
+https://www.npmjs.com/settings/agentai2026/packages  
 
-Actions → **定时发布** → **Run workflow** → 勾选 **force_build**（可选）→ Run  
+### 验证是否生效
 
-在 **检查 npm 登录身份** 步骤应看到：`[npm] whoami: 你的npm用户名`  
-若 whoami 失败，说明 Secret 没配对。
+跑 **定时发布**，步骤 **检查 npm 登录身份** 应显示：  
+`[npm] whoami: 你的用户名`
 
 ---
 
-## 工作流
+## 🤖 GitHub 自动任务
 
-| 工作流 | 作用 |
-|--------|------|
-| 定时发布 | 每小时，上游有变则构建并发布 npm + Docker |
-| 删除失败记录 | 手动清理失败/取消的运行 |
-| 一键清空记录 | 手动清空全部 Actions 历史（需 PAT） |
+| 工作流 | 何时 | 作用 |
+|--------|------|------|
+| 定时发布 | 每小时 | 官方有更新 → 构建 → npm + Docker |
+| 指定版本汉化 | 手动 | 填版本号如 `2026.5.28` |
+| 删除失败记录 | 手动 | 清理失败 Actions |
+| 一键清空记录 | 手动 | 清空全部历史（要 PAT） |
+| 删除已发布包 | 手动 | ⚠️ 删 npm/Docker |
 
-## 本地汉化
+### 指定版本汉化 · 参数
 
-```bash
-git clone https://github.com/openclaw/openclaw.git openclaw
-node cli/index.mjs apply --target=./openclaw
-```
+| 参数 | 说明 |
+|------|------|
+| `upstream_version` | 官方版本号，如 `2026.5.28` |
+| `force_revision` | 同版本只改翻译再发（加日期后缀） |
+| `release_note` | （可选）补充一句，写入 Git 提交与 `CHANGELOG.md` |
+| `publish_npm` | 是否发 npm |
+| `publish_docker` | npm 成功后才推 Docker |
 
-## 删除已发布的 npm / Docker（不可恢复）
+发布成功后会自动生成类似 `feat: 适配上游 v2026.5.28，发布汉化版 …` 的提交说明，并更新根目录 `CHANGELOG.md`；用户可在控制台功能面板的「更新日志」里看到。
 
-若自动删除后 `npm view` 仍显示 `1.0.0`：npm 常**拒绝删除超过 72 小时**的旧版。请打开 [npm 包设置页](https://www.npmjs.com/package/@agentai2026/openclaw-zh) → **Package settings** → **Delete package** 手动删整包。
+### 怎样算发布成功？
 
-Actions → **删除已发布包** → Run workflow → 在 `confirm` 里输入 **`DELETE`**。
+1. publish 日志有 **`[npm] 发布成功`**  
+2. 本机：`npm view @agentai2026/openclaw-zh version` 有结果  
 
-需要 Secrets：`NPM_TOKEN`（需能 **删除/下架** 包）、`DOCKER_PASSWORD`。
+只有 build 绿、publish 写冷却 → 用户仍装不上。
 
-本地：
+---
 
-```bash
-NPM_TOKEN=npm_xxx node scripts/unpublish-npm-all.js
-DOCKER_PASSWORD=xxx bash scripts/delete-docker-tags.sh
-```
+## 📦 npm 包会不会过期？
 
-## 安装
+| | 会过期吗 |
+|---|----------|
+| 已发布的 `@agentai2026/openclaw-zh` | **一般不会**，可长期 install |
+| `NPM_TOKEN` | **会**（Granular 约 90 天） |
+| Actions 的 Artifacts zip | 约 90 天，和 npm 无关 |
 
-```bash
-npm install -g @agentai2026/openclaw-zh@nightly
-docker pull agentai2027/openclaw-zh:nightly
-```
+---
+
+## ⚠️ 删包注意
+
+- 整包删除后约 **24 小时** 不能同名再发  
+- 用户会看到 `404 Unpublished`  
+- 没事别用 **删除已发布包**；确认框要输入 `DELETE`
+
+手动删：  
+https://www.npmjs.com/package/@agentai2026/openclaw-zh → Package settings → Delete package
+
+---
+
+## ✅ 维护清单
+
+**每 1～2 周**
+
+- [ ] Actions「定时发布」是否成功  
+- [ ] publish 有 `[npm] 发布成功`  
+- [ ] `npm view @agentai2026/openclaw-zh version` 正常  
+
+**每 2～3 个月（Granular Token）**
+
+- [ ] 换新 `NPM_TOKEN`  
+
+**官方大版本后**
+
+- [ ] 跑「指定版本汉化」  
+- [ ] 自己装一遍看控制台  
+- [ ] 补 `translations/` 漏翻  
+
+---
+
+## 🩹 常见报错
+
+| 现象 | 处理 |
+|------|------|
+| `403 bypass 2fa` | 换 Classic **Automation** Token |
+| `404 Unpublished` | 删包冷却中，等 24h 或别删包 |
+| CI 全绿装不上 | 看 publish 是否真发出 |
+| `whoami` 失败 | Token 错/过期/多空格 |
+
+---
+
+<div align="center">
+
+**npm 包** · [@agentai2026/openclaw-zh](https://www.npmjs.com/package/@agentai2026/openclaw-zh)
+
+https://www.npmjs.com/package/@agentai2026/openclaw-zh
+
+**可视化面板** · [OpenClaw-Panel](https://github.com/agentai2026/OpenClaw-Panel)
+
+https://github.com/agentai2026/OpenClaw-Panel
+
+---
+
+[返回 README](./README.md)
+
+</div>

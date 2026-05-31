@@ -2,7 +2,7 @@
   "name": "@agentai2026/openclaw-zh-overlay",
   "version": "1.0.0",
   "private": true,
-  "description": "OpenClaw 汉化 overlay 仓库 — CI 克隆上游后应用 translations 并发布 @agentai2026/openclaw-zh",
+  "description": "OpenClaw 中文汉化：翻译 + 功能面板 + 自动打包发布脚本（非官方）",
   "type": "module",
   "bin": {
     "openclaw-zh-cli": "./cli/index.mjs"

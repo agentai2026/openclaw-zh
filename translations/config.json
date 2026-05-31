@@ -132,6 +132,7 @@
       "dashboard/markdown-sidebar.json",
       "dashboard/usage-metrics.json",
       "dashboard/zh-CN-usage.json",
+      "dashboard/zh-CN-common.json",
       "dashboard/agents-utils.json",
       "dashboard/channels-nostr-profile.json",
       "dashboard/agents-overview.json",

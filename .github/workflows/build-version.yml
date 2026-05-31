@@ -23,6 +23,10 @@ on:
         required: false
         default: true
         type: boolean
+      release_note:
+        description: '（可选）补充一句更新说明，会写入提交与 CHANGELOG'
+        required: false
+        type: string
 
 concurrency:
   group: openclaw-zh-version-${{ github.event.inputs.upstream_version }}
@@ -71,6 +75,7 @@ jobs:
         run: |
           node scripts/apply-package-zh.js
           node scripts/apply-i18n.js
+          node scripts/apply-feature-panel.mjs
           OPENCLAW_TARGET=openclaw UPSTREAM_VERSION=${{ env.UPSTREAM_VERSION }} \
             FORCE_REVISION=${{ github.event.inputs.force_revision == 'true' && '1' || '' }} \
             node scripts/bump-openclaw-version.js
@@ -183,4 +188,5 @@ jobs:
           UPSTREAM_VERSION: ${{ env.UPSTREAM_VERSION }}
           UPSTREAM_SHA: ${{ needs.build.outputs.upstream_sha }}
           BUILT_VERSION: ${{ needs.build.outputs.built_version }}
+          RELEASE_NOTE_EXTRA: ${{ github.event.inputs.release_note }}
         run: node scripts/ci-commit-release-state.mjs

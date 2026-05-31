@@ -36,7 +36,7 @@ async function main() {
     case 'apply':
       await run('apply-package-zh.js', targetArgs);
       await run('apply-i18n.js', targetArgs);
-      console.log('\n提示: 在上游目录执行 pnpm install 后，运行:');
+      console.log('\n下一步: 进入 openclaw 目录执行 pnpm install，再编译（详见 README）');
       console.log('  OPENCLAW_TARGET=<path> node scripts/regenerate-schema-artifacts.mjs');
       break;
     case 'status':
@@ -46,10 +46,10 @@ async function main() {
       break;
     default:
       console.log(`
-OpenClaw 汉化 CLI
+OpenClaw 汉化命令行
 
-  openclaw-zh-cli apply [--target=PATH]  应用汉化到上游目录
-  openclaw-zh-cli status                 显示说明
+  openclaw-zh-cli apply [--target=PATH]  把翻译和功能面板写入官方源码目录
+  openclaw-zh-cli status                 显示本仓库路径说明
 `);
   }
 }

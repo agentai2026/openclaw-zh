@@ -1,0 +1,7 @@
+{
+  "file": "ui/src/i18n/locales/zh-CN.ts",
+  "description": "控制台通用文案（侧栏文档链接等）",
+  "replacements": {
+    "docs: \"文档\",": "docs: \"官方文档\","
+  }
+}

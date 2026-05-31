@@ -56,7 +56,11 @@ async function main() {
   }
 
   printStats(allStats, { dryRun, verify: false });
-  if (!dryRun) await applyBrandReplace();
+  if (!dryRun) {
+    await applyBrandReplace();
+    const { applyFeaturePanel } = await import('./apply-feature-panel.mjs');
+    await applyFeaturePanel(TARGET, { dryRun: false, verbose });
+  }
 }
 
 main().catch((err) => {
