@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="96" />
+
 # 维护者配置指南
 
 **发 npm、配 GitHub 自动打包 — 大白话版**

@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="140" />
+
 # OpenClaw 汉化版
 
 **OpenClaw 中文界面 · 一键安装 · 自动跟进官方更新**
