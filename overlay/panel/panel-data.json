@@ -132,6 +132,7 @@
     "github": "https://github.com/agentai2026/openclaw-zh",
     "upstream": "https://github.com/openclaw/openclaw",
     "docs": "https://docs.openclaw.ai",
+    "authorSite": "https://agentai2026.github.io/my-website/",
     "npm": "https://www.npmjs.com/package/@agentai2026/openclaw-zh",
     "license": "MIT License"
   }

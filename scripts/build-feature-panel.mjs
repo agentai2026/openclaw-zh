@@ -136,6 +136,7 @@ const RENDER_ABOUT_TAB = `function renderAboutTab() {
       { href: about.github, icon: 'github', label: 'GitHub' },
       { href: about.npm, icon: 'package', label: 'npm' },
       { href: about.docs, icon: 'globe', label: '官方文档' },
+      { href: about.authorSite, icon: 'globe', label: '汉化作者官网' },
       { href: about.upstream, icon: 'github', label: '上游项目' },
     ].filter((l) => l.href);
     return \`
