@@ -3,8 +3,8 @@
   "reason": "npm_unpublished_cooldown",
   "version": "2026.5.28-zh",
   "upstream_version": "2026.5.28",
-  "upstream_sha": "9b6c981",
+  "upstream_sha": "72f74b3",
   "unpublished_at": "2026-05-31T09:08:00.382Z",
   "retry_after": "2026-06-01T09:08:00.382Z",
-  "last_attempt_at": "2026-05-31T21:48:03.351Z"
+  "last_attempt_at": "2026-05-31T22:48:24.119Z"
 }
