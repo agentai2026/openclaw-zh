@@ -1,0 +1,17 @@
+{
+  "file": "src/flows/search-setup.ts",
+  "description": "网页搜索引导 - CLI onboard 搜索提供商选择",
+  "replacements": {
+    "\"Web search\"": "\"网页搜索\"",
+    "`${entry.label} works without an API key.`": "`${entry.label} 无需 API 密钥即可使用。`",
+    "\"OpenClaw will enable the plugin and use it as your web_search provider.\"": "\"OpenClaw 将启用该插件并将其用作 web_search 提供商。\"",
+    "\"Secret references enabled — OpenClaw will store a reference instead of the API key.\"": "\"已启用密钥引用 — OpenClaw 将存储引用而不是 API 密钥.\"",
+    "`Env var: ${ref.id}${envAvailable ? \" (detected)\" : \"\"}.`": "`环境变量：${ref.id}${envAvailable ? \"（已检测到）\" : \"\"}。`",
+    "`Set ${ref.id} in the Gateway environment.`": "`在网关环境中设置 ${ref.id}。`",
+    "? `${credentialLabel} (leave blank to keep current)`": "? `${credentialLabel}（留空保持当前）`",
+    "        ? `${credentialLabel} (leave blank to use env var)`": "        ? `${credentialLabel}（留空使用环境变量）`",
+    "placeholder: keyConfigured ? \"Leave blank to keep current\" : entry.placeholder": "placeholder: keyConfigured ? \"留空保持当前\" : entry.placeholder",
+    "`No ${credentialLabel} stored — web_search won't work until a key is available.`": "`未存储 ${credentialLabel} — 在有可用密钥之前 web_search 无法使用.`",
+    "`Get your key at: ${entry.signupUrl}`": "`在此获取密钥：${entry.signupUrl}`"
+  }
+}

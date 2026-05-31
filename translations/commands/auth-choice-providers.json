@@ -1,0 +1,5 @@
+{
+  "file": "src/commands/auth-choice.apply.api-providers.ts",
+  "description": "API 提供商认证交互 — v2026.4.5 LiteLLM 已迁移至 plugin 架构",
+  "replacements": {}
+}

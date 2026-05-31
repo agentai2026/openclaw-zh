@@ -1,0 +1,12 @@
+{
+  "file": "src/wizard/i18n/locales/zh-CN.ts",
+  "description": "初始化完成提示 - 添加汉化官网链接",
+  "replacements": {
+    "outroDashboardLink: \"Onboarding 完成。使用上面的 dashboard 链接控制 OpenClaw。\"": "outroDashboardLink: \"初始化完成！使用上面的链接打开控制面板。\\n\\n� 汉化版官网：https://openclaw.qt.cool/\"",
+    "outroDashboardOpened: \"Onboarding 完成。Dashboard 已打开；保留该标签页以控制 OpenClaw。\"": "outroDashboardOpened: \"初始化完成！已打开控制面板；保持该标签页以控制 OpenClaw。\\n\\n🔗 汉化版官网：https://openclaw.qt.cool/\"",
+    "outroSeeded: \"Onboarding 完成。Web UI 已在后台初始化，可随时用上面的 dashboard 链接打开。\"": "outroSeeded: \"初始化完成！Web UI 已在后台准备就绪；随时可用上面的链接打开。\\n\\n🔗 汉化版官网：https://openclaw.qt.cool/\"",
+    "webSearchTitle: \"Web search\"": "webSearchTitle: \"网页搜索\"",
+    "whatNow: '下一步：https://openclaw.ai/showcase（\"What People Are Building\"）。'": "whatNow: '接下来做什么：查看 https://openclaw.ai/showcase（\"大家都在用 OpenClaw 做什么\"）\\n\\n� 汉化版更新：https://openclaw.qt.cool/'",
+    "whatNowTitle: \"下一步\"": "whatNowTitle: \"接下来\""
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "file": "src/commands/status.command-report.ts",
+  "description": "状态命令 - 报告顶层标题",
+  "replacements": {
+    "params.heading(\"OpenClaw status\")": "params.heading(\"OpenClaw 状态\")",
+    "title: \"Security audit\",": "title: \"安全审计\","
+  }
+}

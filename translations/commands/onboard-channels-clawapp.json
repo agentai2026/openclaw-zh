@@ -1,0 +1,5 @@
+{
+  "file": "src/commands/onboard-channels.ts",
+  "description": "ClawApp 移动端渠道入口注入 — 在渠道选择列表中添加 ClawApp 选项，选择后显示安装引导并返回列表",
+  "replacements": {}
+}

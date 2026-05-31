@@ -1,0 +1,8 @@
+{
+  "file": "src/flows/model-picker.ts",
+  "description": "模型选择器 - 模型筛选/选择/允许列表界面汉化",
+  "replacements": {
+    "\"reasoning\"": "\"推理\"",
+    "placeholder: \"provider/model\"": "placeholder: \"提供商/模型名\""
+  }
+}

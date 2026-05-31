@@ -16,7 +16,7 @@
 
 ```
 openclaw-zh/          ← 本仓库（轻量）
-├── translations/     ← 中文词条
+├── translations/     ← 全量汉化词典（源自 OpenClawChineseTranslation，见 ATTRIBUTION.md）
 ├── patches/          ← package 元数据、品牌替换
 ├── scripts/          ← apply / bump / publish
 ├── cli/              ← openclaw-zh-cli
@@ -29,6 +29,7 @@ CI 临时目录 openclaw/  ← 不入库，每次从官方克隆
 ```
 
 - **上游无变更时跳过构建**（对比 `.github/last-build.json`）
+- **npm 发布失败**（如整包删除后 24h 冷却）：写入 `.github/publish-pending.json`，**每小时自动重试**，冷却期内跳过完整构建
 - **npm**：`@agentai2026/openclaw-zh`，标签 `@nightly` / `@latest`
 - **Docker**：`agentai2027/openclaw-zh`
 
@@ -70,7 +71,9 @@ docker run -d --name openclaw-zh -p 18789:18789 agentai2027/openclaw-zh:nightly
 ```bash
 git clone https://github.com/openclaw/openclaw.git openclaw
 node cli/index.mjs apply --target=./openclaw
-cd openclaw && pnpm install && pnpm run build
+cd openclaw && pnpm install
+cd .. && OPENCLAW_TARGET=./openclaw node scripts/regenerate-schema-artifacts.mjs
+cd openclaw && pnpm run build
 ```
 
 ---
@@ -79,7 +82,8 @@ cd openclaw && pnpm install && pnpm run build
 
 | 路径 | 说明 |
 |------|------|
-| `translations/zh-CN/` | UI 字符串词典 |
+| `translations/` | 全量汉化模块（`config.json` 索引 ~194 个 JSON） |
+| `translations/ATTRIBUTION.md` | 翻译来源与许可证说明 |
 | `patches/package-zh-overlay.json` | npm 描述、仓库链接等 |
 | `patches/brand-replace.json` | 品牌文案 |
 | `scripts/apply-i18n.js` | 应用词典替换 |

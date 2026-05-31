@@ -1,0 +1,11 @@
+{
+  "file": "src/wizard/setup.finalize.ts",
+  "description": "初始化向导最终步骤",
+  "replacements": {
+    "\"Systemd\"": "\"Systemd\"",
+    "\"https://docs.openclaw.ai/gateway/health\"": "\"https://docs.openclaw.ai/gateway/health\"",
+    "\"https://docs.openclaw.ai/gateway/troubleshooting\"": "\"https://docs.openclaw.ai/gateway/troubleshooting\"",
+    "\"Control UI\"": "\"控制面板\"",
+    "\"Token\"": "\"令牌\""
+  }
+}

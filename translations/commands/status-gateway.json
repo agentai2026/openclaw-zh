@@ -1,0 +1,7 @@
+{
+  "file": "src/commands/status.gateway-connection.ts",
+  "description": "状态命令 - 网关连接详情",
+  "replacements": {
+    "\"Gateway connection:\"": "\"网关连接：\""
+  }
+}

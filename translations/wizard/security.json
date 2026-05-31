@@ -1,0 +1,5 @@
+{
+  "file": "src/wizard/setup.ts",
+  "description": "安全警告提示（setup.ts 入口）",
+  "replacements": {}
+}

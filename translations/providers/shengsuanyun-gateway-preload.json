@@ -1,0 +1,7 @@
+{
+  "file": "src/gateway/server.impl.ts",
+  "description": "胜算云工具预加载 - 网关启动时提前拉取多模态工具列表",
+  "replacements": {
+    "import { getActiveEmbeddedRunCount } from \"../agents/pi-embedded-runner/run-state.js\";": "import { getActiveEmbeddedRunCount } from \"../agents/pi-embedded-runner/run-state.js\";\nimport { preloadShengSuanYunTools } from \"../agents/tools/shengsuanyun/generate.js\";"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "file": "ui/src/ui/app-render.helpers.ts",
+  "description": "Dashboard 通用辅助组件",
+  "replacements": {
+    "aria-label=\"Theme\"": "aria-label=\"主题\""
+  }
+}

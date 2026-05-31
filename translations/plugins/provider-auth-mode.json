@@ -1,0 +1,10 @@
+{
+  "file": "src/plugins/provider-auth-mode.ts",
+  "description": "提供商认证模式选择 (v2026.3.22 从 apply-helpers 迁移)",
+  "replacements": {
+    "message: params.copy?.modeMessage ?? \"How do you want to provide this API key?\"": "message: params.copy?.modeMessage ?? \"你想如何提供此 API 密钥？\"",
+    "label: params.copy?.plaintextLabel ?? \"Paste API key now\"": "label: params.copy?.plaintextLabel ?? \"直接粘贴 API 密钥\"",
+    "hint: params.copy?.plaintextHint ?? \"Stores the key directly in OpenClaw config\"": "hint: params.copy?.plaintextHint ?? \"将密钥直接存储在 OpenClaw 配置中\"",
+    "label: params.copy?.refLabel ?? \"Use external secret provider\"": "label: params.copy?.refLabel ?? \"使用外部密钥提供商\""
+  }
+}

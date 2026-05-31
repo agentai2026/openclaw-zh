@@ -1,0 +1,28 @@
+{
+  "id": "shengsuanyun",
+  "providers": ["shengsuanyun"],
+  "providerAuthEnvVars": {
+    "shengsuanyun": ["SHENGSUANYUN_API_KEY"]
+  },
+  "providerAuthChoices": [
+    {
+      "provider": "shengsuanyun",
+      "method": "api-key",
+      "choiceId": "shengsuanyun-api-key",
+      "choiceLabel": "胜算云 API 密钥",
+      "choiceHint": "国内 API 聚合平台",
+      "groupId": "shengsuanyun",
+      "groupLabel": "胜算云",
+      "groupHint": "国内 API 聚合平台 (DeepSeek/GPT/Claude)",
+      "optionKey": "shengsuanyunApiKey",
+      "cliFlag": "--shengsuanyun-api-key",
+      "cliOption": "--shengsuanyun-api-key <key>",
+      "cliDescription": "胜算云 API 密钥"
+    }
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  }
+}

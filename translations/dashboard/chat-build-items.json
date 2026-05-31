@@ -1,0 +1,7 @@
+{
+  "file": "ui/src/ui/chat/build-chat-items.ts",
+  "description": "对话历史构建（历史截断提示）",
+  "replacements": {
+    "`Showing last ${visibleHistoryCount} messages (${hiddenHistoryCount} hidden).`": "`显示最近 ${visibleHistoryCount} 条消息（已隐藏 ${hiddenHistoryCount} 条）。`"
+  }
+}

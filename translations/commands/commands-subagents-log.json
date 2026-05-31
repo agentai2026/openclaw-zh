@@ -1,0 +1,8 @@
+{
+  "file": "src/auto-reply/reply/commands-subagents/action-log.ts",
+  "description": "子代理命令 - /subagents log",
+  "replacements": {
+    "\"📜 Usage: /subagents log <id|#> [limit]\"": "\"📜 用法：/subagents log <id|#> [limit]\"",
+    "\\n(no messages)": "\\n（无消息）"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "file": "extensions/feishu/src/channel.ts",
+  "description": "飞书/Lark 扩展配置",
+  "__note": "v2026.3.22: 飞书 schema 已迁移至 config-schema.ts 使用 Zod，JSON Schema 注入不再适用",
+  "replacements": {
+    "label: \"Feishu\"": "label: \"飞书\"",
+    "selectionLabel: \"Feishu/Lark (飞书)\"": "selectionLabel: \"飞书/Lark (Feishu)\"",
+    "blurb: \"飞书/Lark enterprise messaging.\"": "blurb: \"飞书/Lark 企业消息集成。\""
+  }
+}

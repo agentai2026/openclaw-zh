@@ -1,0 +1,5 @@
+{
+  "file": "src/wizard/setup.ts",
+  "description": "初始化引导向导",
+  "replacements": {}
+}

@@ -1,0 +1,32 @@
+{
+  "file": "src/cli/program/help.ts",
+  "description": "CLI 帮助信息",
+  "replacements": {
+    "Run guided setup for a local Gateway, workspace, auth, and channels.": "引导设置本地网关、工作区、认证和渠道。",
+    "Create the baseline config, workspace, and session folders.": "创建基础配置、工作区和会话目录。",
+    "Change models, Gateway, channels, plugins, skills, and health checks.": "调整模型、网关、渠道、插件、技能和健康检查。",
+    "Check Gateway, channel, model, and recent-session status.": "查看网关、渠道、模型和最近会话状态。",
+    "Repair common config, service, plugin, and channel problems.": "修复常见的配置、服务、插件和渠道问题。",
+    "Add or update a chat channel account with guided prompts.": "在引导提示下添加或更新聊天渠道账号。",
+    "See connected messaging accounts and login state.": "查看已连接的消息账号和登录状态。",
+    "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001.": "在 ws://127.0.0.1:19001 上运行开发网关（隔离状态/配置）。",
+    "Start the Gateway and replace anything bound to its port.": "启动网关并替换占用其端口的进程。",
+    "Show model/provider auth health before running agents.": "运行代理前查看模型/提供商认证健康状态。",
+    "Inspect enabled, disabled, and installed plugins.": "查看已启用、已禁用和已安装的插件。",
+    "Run one agent turn through the Gateway and optionally deliver the reply.": "通过网关运行一次代理轮次，并可选交付回复。",
+    "Send via your Telegram bot.": "通过你的 Telegram 机器人发送。",
+    "Dev profile: isolate state under ~/.openclaw-dev, default gateway port 19001, and shift derived ports (browser/canvas)": "开发配置：在 ~/.openclaw-dev 下隔离状态，默认网关端口 19001，并移动派生端口（浏览器/画布）",
+    "Use a named profile (isolates OPENCLAW_STATE_DIR/OPENCLAW_CONFIG_PATH under ~/.openclaw-<name>)": "使用命名配置文件（在 ~/.openclaw-<name> 下隔离状态和配置）",
+    "Disable ANSI colors": "禁用 ANSI 颜色",
+    "`Global log level override for file + console (${CLI_LOG_LEVEL_VALUES})`": "`全局日志级别覆盖，适用于文件和控制台 (${CLI_LOG_LEVEL_VALUES})`",
+    "return `\\n${theme.heading(\"Examples:\")}\\n${fmtExamples}\\n\\n${theme.muted(\"Docs:\")} ${docs}\\n`;": "return `\\n${theme.heading(\"示例：\")}\\n${fmtExamples}\\n\\n${theme.muted(\"文档：\")} ${docs}\\n${theme.muted(\"汉化版：\")} ${theme.info(\"https://openclaw.qt.cool/\")}\\n`;",
+    "\"Run the CLI inside a running Podman/Docker container named <name> (default: env OPENCLAW_CONTAINER)\"": "\"在正在运行的 Podman/Docker 容器 <name> 内运行 CLI（默认：环境变量 OPENCLAW_CONTAINER）\"",
+    "\"Hint: commands suffixed with * have subcommands. Run <command> --help for details.\"": "\"提示：带 * 后缀的命令有子命令。运行 <command> --help 查看详情。\"",
+    "program.helpOption(\"-h, --help\", \"Display help for command\")": "program.helpOption(\"-h, --help\", \"显示命令帮助\")",
+    "program.helpCommand(\"help [command]\", \"Display help for command\")": "program.helpCommand(\"help [command]\", \"显示命令帮助\")",
+    ".replace(/^Usage:/gm, theme.heading(\"Usage:\"))": ".replace(/^Usage:/gm, theme.heading(\"用法：\"))",
+    ".replace(/^Options:/gm, theme.heading(\"Options:\"))": ".replace(/^Options:/gm, theme.heading(\"选项：\"))",
+    ".replace(/^Commands:/gm, theme.heading(\"Commands:\"));": ".replace(/^Commands:/gm, theme.heading(\"命令：\"));",
+    ".version(ctx.programVersion)": ".version(ctx.programVersion, \"-V, --version\", \"输出版本号\")"
+  }
+}

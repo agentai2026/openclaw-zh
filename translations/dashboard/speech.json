@@ -1,0 +1,8 @@
+{
+  "file": "ui/src/ui/chat/speech.ts",
+  "description": "语音识别和语音合成提示",
+  "replacements": {
+    "\"Speech recognition is not supported in this browser\"": "\"此浏览器不支持语音识别\"",
+    "\"Speech synthesis is not supported in this browser\"": "\"此浏览器不支持语音合成\""
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "file": "src/commands/status.command-sections.ts",
+  "description": "状态命令 - 区块内容文本",
+  "replacements": {
+    "\"No critical or warn findings detected.\"": "\"未检测到严重或警告级别问题。\""
+  }
+}

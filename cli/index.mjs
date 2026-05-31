@@ -36,6 +36,8 @@ async function main() {
     case 'apply':
       await run('apply-package-zh.js', targetArgs);
       await run('apply-i18n.js', targetArgs);
+      console.log('\n提示: 在上游目录执行 pnpm install 后，运行:');
+      console.log('  OPENCLAW_TARGET=<path> node scripts/regenerate-schema-artifacts.mjs');
       break;
     case 'status':
       console.log('OpenClaw 汉化 overlay 仓库');

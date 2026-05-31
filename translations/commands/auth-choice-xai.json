@@ -1,0 +1,7 @@
+{
+  "file": "extensions/xai/index.ts",
+  "description": "xAI (Grok) 认证配置 (v2026.3.22 迁移至 extension)",
+  "replacements": {
+    "promptMessage: \"Enter xAI API key\"": "promptMessage: \"输入 xAI API 密钥\""
+  }
+}

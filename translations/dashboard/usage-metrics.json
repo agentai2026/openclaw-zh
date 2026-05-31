@@ -1,0 +1,6 @@
+{
+  "file": "ui/src/ui/views/usage-metrics.ts",
+  "description": "Dashboard 用量统计图表",
+  "__note": "v2026.3.22: 已改用 i18n t() 调用",
+  "replacements": {}
+}

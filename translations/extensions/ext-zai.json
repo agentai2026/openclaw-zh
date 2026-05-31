@@ -1,0 +1,14 @@
+{
+  "file": "extensions/zai/index.ts",
+  "description": "Z.AI (智谱) 扩展认证选项 (v2026.3.22 从 auth-choice 迁移)",
+  "replacements": {
+    "{ value: \"global\", label: \"Global\", hint: \"Z.AI Global (api.z.ai)\" }": "{ value: \"global\", label: \"国际版\", hint: \"Z.AI 国际版 (api.z.ai)\" }",
+    "{ value: \"cn\", label: \"CN\", hint: \"Z.AI CN (open.bigmodel.cn)\" }": "{ value: \"cn\", label: \"国内版\", hint: \"Z.AI 国内版 (open.bigmodel.cn)\" }",
+    "label: \"Coding-Plan-Global\"": "label: \"编程计划-国际版\"",
+    "hint: \"GLM Coding Plan Global (api.z.ai)\"": "hint: \"GLM 编程计划国际版 (api.z.ai)\"",
+    "label: \"Coding-Plan-CN\"": "label: \"编程计划-国内版\"",
+    "hint: \"GLM Coding Plan CN (open.bigmodel.cn)\"": "hint: \"GLM 编程计划国内版 (open.bigmodel.cn)\"",
+    "promptMessage: \"Enter Z.AI API key\"": "promptMessage: \"输入 Z.AI API 密钥\"",
+    "groupHint: \"GLM Coding Plan / Global / CN\"": "groupHint: \"GLM 编程计划 / 国际版 / 国内版\""
+  }
+}

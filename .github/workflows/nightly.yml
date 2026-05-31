@@ -1,4 +1,4 @@
-# 定时发布：检测上游 → 汉化构建 → npm + Docker
+# 定时发布：检测上游 → 汉化构建 → npm + Docker（发布失败则每小时重试）
 name: 定时发布
 
 on:
@@ -17,12 +17,13 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # 让 checkout 等 JS Action 使用 Node 24，消除弃用警告
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   NPM_PACKAGE: '@agentai2026/openclaw-zh'
   DOCKER_IMAGE: agentai2027/openclaw-zh
   UPSTREAM_REPO: openclaw/openclaw
   NODE_VERSION: '22'
+  # npm 整包 unpublish 后通常需 24h 才能同名再发
+  NPM_COOLDOWN_MS: 86400000
 
 permissions:
   contents: write
@@ -31,43 +32,64 @@ jobs:
   check-upstream:
     runs-on: ubuntu-latest
     outputs:
-      has_changes: ${{ steps.check.outputs.has_changes }}
+      need_build: ${{ steps.check.outputs.need_build }}
+      need_publish: ${{ steps.check.outputs.need_publish }}
+      wait_cooldown: ${{ steps.check.outputs.wait_cooldown }}
       upstream_version: ${{ steps.check.outputs.upstream_version }}
       upstream_sha: ${{ steps.check.outputs.upstream_sha }}
+      in_npm_cooldown: ${{ steps.check.outputs.in_npm_cooldown }}
+      npm_retry_after: ${{ steps.check.outputs.npm_retry_after }}
     steps:
       - uses: actions/checkout@v5
 
-      - name: 检测上游是否有变更
+      - name: 检测上游 / 待发布 / npm 冷却
         id: check
         env:
           FORCE: ${{ github.event.inputs.force_build }}
+        run: node scripts/ci-check-release.mjs
+
+  wait-cooldown:
+    needs: check-upstream
+    if: needs.check-upstream.outputs.wait_cooldown == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PAT || github.token }}
+
+      - name: npm 删包冷却中（下小时再试）
         run: |
-          UPSTREAM_VERSION=$(curl -fsSL https://registry.npmjs.org/openclaw/latest | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).version))")
-          UPSTREAM_SHA=$(curl -fsSL "https://api.github.com/repos/${UPSTREAM_REPO}/commits/main" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.parse(d).sha.slice(0,7)))")
-          echo "upstream_version=$UPSTREAM_VERSION" >> $GITHUB_OUTPUT
-          echo "upstream_sha=$UPSTREAM_SHA" >> $GITHUB_OUTPUT
+          echo "::notice::npm 包处于删包冷却期，预计 ${{ needs.check-upstream.outputs.npm_retry_after }} 后可发布"
+          echo "本次跳过构建以节省 Actions 时间；定时任务每小时自动检查"
 
-          LAST_SHA=""
-          LAST_VER=""
-          if [ -f .github/last-build.json ]; then
-            LAST_SHA=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.github/last-build.json','utf8')).upstream_sha||'')")
-            LAST_VER=$(node -e "console.log(JSON.parse(require('fs').readFileSync('.github/last-build.json','utf8')).upstream_version||'')")
-          fi
+      - name: 记录待发布（npm 冷却中，下小时重试）
+        env:
+          UPSTREAM_VERSION: ${{ needs.check-upstream.outputs.upstream_version }}
+          UPSTREAM_SHA: ${{ needs.check-upstream.outputs.upstream_sha }}
+          NPM_RETRY_AFTER: ${{ needs.check-upstream.outputs.npm_retry_after }}
+        run: |
+          node -e "
+          const fs=require('fs');
+          const p='.github/publish-pending.json';
+          let j={};
+          if (fs.existsSync(p)) j=JSON.parse(fs.readFileSync(p,'utf8'));
+          Object.assign(j,{
+            status:'pending',
+            reason:'npm_unpublished_cooldown',
+            upstream_version:process.env.UPSTREAM_VERSION,
+            upstream_sha:process.env.UPSTREAM_SHA,
+            retry_after:process.env.NPM_RETRY_AFTER,
+            last_attempt_at:new Date().toISOString()
+          });
+          fs.writeFileSync(p, JSON.stringify(j,null,2)+'\n');
+          "
 
-          if [ "$FORCE" = "true" ]; then
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-
-          if [ "$UPSTREAM_SHA" = "$LAST_SHA" ] && [ "$UPSTREAM_VERSION" = "$LAST_VER" ]; then
-            echo "has_changes=false" >> $GITHUB_OUTPUT
-          else
-            echo "has_changes=true" >> $GITHUB_OUTPUT
-          fi
+      - name: 提交 pending 状态
+        run: node scripts/ci-commit-release-state.mjs
 
   build:
     needs: check-upstream
-    if: needs.check-upstream.outputs.has_changes == 'true'
+    if: needs.check-upstream.outputs.need_build == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -100,11 +122,14 @@ jobs:
           set -e
           corepack enable
           pnpm install --no-frozen-lockfile --reporter=append-only
+          cd ..
+          OPENCLAW_TARGET=openclaw node scripts/regenerate-schema-artifacts.mjs
+          cd openclaw
           pnpm canvas:a2ui:bundle || true
           node scripts/tsdown-build.mjs
           node scripts/runtime-postbuild.mjs
           node scripts/build-stamp.mjs || true
-          pnpm build:plugin-sdk:dts || echo "⚠️ plugin-sdk dts 跳过（上游 TS 问题不影响运行）"
+          pnpm build:plugin-sdk:dts || echo "⚠️ plugin-sdk dts 跳过"
           node --import tsx scripts/write-plugin-sdk-entry-dts.ts || true
           node --import tsx scripts/canvas-a2ui-copy.ts || true
           node --import tsx scripts/copy-hook-metadata.ts || true
@@ -133,8 +158,10 @@ jobs:
 
   publish:
     needs: [check-upstream, build]
-    if: needs.check-upstream.outputs.has_changes == 'true'
+    if: needs.check-upstream.outputs.need_publish == 'true' && needs.check-upstream.outputs.need_build == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      npm_published: ${{ steps.npm.outputs.npm_published }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -160,38 +187,27 @@ jobs:
           fi
           echo "[npm] whoami: $(npm whoami --registry=https://registry.npmjs.org/)"
 
-      - name: 发布 npm
-        working-directory: openclaw
+      - name: 发布 npm（含删包冷却预检）
+        id: npm
+        working-directory: ${{ github.workspace }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "::error::未配置 NPM_TOKEN Secret"
-            exit 1
-          fi
-          VER=$(node -p "require('./package.json').version")
-          echo "[npm] 发布 ${{ env.NPM_PACKAGE }}@${VER}"
-          if npm view "${{ env.NPM_PACKAGE }}@${VER}" version 2>/dev/null; then
-            echo "[npm] 版本已存在，跳过"
-            exit 0
-          fi
-          npm publish --access public --ignore-scripts --tag nightly 2>&1 | tee /tmp/npm.log
-          CODE=${PIPESTATUS[0]}
-          if [ "$CODE" -eq 0 ]; then exit 0; fi
-          if grep -qiE "EPUBLISHCONFLICT|already exists" /tmp/npm.log; then exit 0; fi
-          if grep -qiE "bypass 2fa|Two-factor authentication" /tmp/npm.log; then
-            echo "::error::NPM_TOKEN 无效：请使用 npm Classic「Automation」令牌，或 Granular 令牌并开启 Bypass 2FA。见 SETUP_GUIDE.md"
-          fi
-          exit "$CODE"
+          OPENCLAW_DIR: ${{ github.workspace }}/openclaw
+          UPSTREAM_VERSION: ${{ needs.check-upstream.outputs.upstream_version }}
+          UPSTREAM_SHA: ${{ needs.check-upstream.outputs.upstream_sha }}
+        run: node scripts/ci-npm-publish.mjs
 
       - uses: docker/setup-buildx-action@v3
+        if: steps.npm.outputs.npm_published == 'true'
 
       - uses: docker/login-action@v3
+        if: steps.npm.outputs.npm_published == 'true'
         with:
           username: agentai2027
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - uses: docker/build-push-action@v6
+        if: steps.npm.outputs.npm_published == 'true'
         with:
           context: .
           file: docker/Dockerfile.publish
@@ -200,18 +216,13 @@ jobs:
             ${{ env.DOCKER_IMAGE }}:nightly
             ${{ env.DOCKER_IMAGE }}:latest
 
-      - name: 更新 last-build
+      - name: 更新发布状态（成功写 last-build；失败写 pending 供下小时重试）
+        if: always()
+        env:
+          UPSTREAM_VERSION: ${{ needs.check-upstream.outputs.upstream_version }}
+          UPSTREAM_SHA: ${{ needs.check-upstream.outputs.upstream_sha }}
         run: |
-          node -e "
-          require('fs').writeFileSync('.github/last-build.json', JSON.stringify({
-            upstream_version: '${{ needs.check-upstream.outputs.upstream_version }}',
-            upstream_sha: '${{ needs.check-upstream.outputs.upstream_sha }}',
-            built_version: require('./openclaw/package.json').version,
-            built_at: new Date().toISOString()
-          }, null, 2));
-          "
-          git config user.name "openclaw-zh-bot"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/last-build.json
-          git diff --staged --quiet || git commit -m "ci: last-build ${{ needs.check-upstream.outputs.upstream_sha }}"
-          git push || true
+          if [ "${{ steps.npm.outputs.npm_published }}" = "true" ]; then
+            export BUILT_VERSION=$(node -p "require('./openclaw/package.json').version")
+          fi
+          node scripts/ci-commit-release-state.mjs

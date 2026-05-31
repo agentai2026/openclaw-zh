@@ -1,0 +1,7 @@
+{
+  "file": "src/commands/auth-choice-options.ts",
+  "description": "认证选项列表 - 提供商分组和选项",
+  "replacements": {
+    "label: \"Skip for now\"": "label: \"暂时跳过\""
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "file": "src/auto-reply/reply/commands-subagents/action-focus.ts",
+  "description": "子代理命令 - /focus 聚焦操作",
+  "replacements": {
+    "\"Usage: /focus <subagent-label|session-key|session-id|session-label>\"": "\"用法：/focus <子代理标签|会话键|会话ID|会话标签>\"",
+    "`⚠️ Only ${boundBy} can refocus this conversation.`": "`⚠️ 只有 ${boundBy} 可以重新聚焦此对话。`",
+    "\"⚠️ Conversation bindings are unavailable for this account.\"": "\"⚠️ 此账户不支持对话绑定。\"",
+    "`created child conversation ${binding.conversation.conversationId} and bound it to ${binding.targetSessionKey}`": "`创建了子对话 ${binding.conversation.conversationId} 并绑定到 ${binding.targetSessionKey}`",
+    "`bound this conversation to ${binding.targetSessionKey}`": "`已将此对话绑定到 ${binding.targetSessionKey}`",
+    "\"⚠️ Failed to bind this conversation to the target session.\"": "\"⚠️ 无法将此对话绑定到目标会话。\""
+  }
+}

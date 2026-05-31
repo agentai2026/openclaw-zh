@@ -1,0 +1,10 @@
+{
+  "file": "src/auto-reply/reply/commands-subagents/action-unfocus.ts",
+  "description": "子代理命令 - /unfocus 取消聚焦",
+  "replacements": {
+    "\"⚠️ /unfocus must be run inside a focused conversation.\"": "\"⚠️ /unfocus 必须在已聚焦的对话中运行。\"",
+    "\"ℹ️ This conversation is not currently focused.\"": "\"ℹ️ 此对话当前未聚焦。\"",
+    "`⚠️ Only ${boundBy} can unfocus this conversation.`": "`⚠️ 只有 ${boundBy} 可以取消聚焦此对话。`",
+    "\"✅ Conversation unfocused.\"": "\"✅ 对话已取消聚焦。\""
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "file": "src/status/agent-runtime-label.ts",
+  "description": "Agent 运行时显示标签",
+  "replacements": {
+    "pi: \"OpenClaw Pi Default\"": "pi: \"OpenClaw Pi 默认\""
+  }
+}

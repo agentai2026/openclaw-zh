@@ -1,0 +1,12 @@
+{
+  "file": "src/cli/gateway-cli/call.ts",
+  "description": "gateway call 命令选项",
+  "replacements": {
+    ".option(\"--url <url>\", \"Gateway WebSocket URL (defaults to gateway.remote.url when configured)\")": ".option(\"--url <url>\", \"网关 WebSocket URL（已配置时默认为 gateway.remote.url）\")",
+    ".option(\"--token <token>\", \"Gateway token (if required)\")": ".option(\"--token <token>\", \"网关令牌（如需要）\")",
+    ".option(\"--password <password>\", \"Gateway password (password auth)\")": ".option(\"--password <password>\", \"网关密码（password 认证）\")",
+    ".option(\"--timeout <ms>\", \"Timeout in ms\", \"10000\")": ".option(\"--timeout <ms>\", \"超时（毫秒）\", \"10000\")",
+    ".option(\"--expect-final\", \"Wait for final response (agent)\", false)": ".option(\"--expect-final\", \"等待最终响应（代理）\", false)",
+    ".option(\"--json\", \"Output JSON\", false)": ".option(\"--json\", \"输出 JSON\", false)"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "file": "ui/src/ui/chat/chat-queue.ts",
+  "description": "Dashboard 对话队列组件（v2026.4.25 从 chat.ts 抽出）",
+  "replacements": {
+    "<div class=\"chat-queue__title\">Queued (${props.queue.length})</div>": "<div class=\"chat-queue__title\">队列中 (${props.queue.length})</div>",
+    "html`<span class=\"chat-queue__badge\">Steered</span>`": "html`<span class=\"chat-queue__badge\">已引导</span>`",
+    "? `Image (${item.attachments.length})`": "? `图片 (${item.attachments.length})`",
+    "title=\"Steer now\"": "title=\"立即引导\"",
+    "aria-label=\"Steer queued message\"": "aria-label=\"引导排队消息\"",
+    "<span>Steer</span>": "<span>引导</span>",
+    "aria-label=\"Remove queued message\"": "aria-label=\"移除队列消息\""
+  }
+}

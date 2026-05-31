@@ -1,0 +1,6 @@
+{
+  "file": "src/commands/onboard-non-interactive/local/auth-choice-inference.ts",
+  "description": "胜算云 - v2026.3.22 flag 推断已由 resolveManifestProviderOnboardAuthFlags() 处理",
+  "__note": "auth-choice-inference.ts 现在从 plugin manifest 加载 flags",
+  "replacements": {}
+}

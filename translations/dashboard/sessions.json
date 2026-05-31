@@ -1,0 +1,29 @@
+{
+  "file": "ui/src/ui/views/sessions.ts",
+  "description": "Dashboard 会话页面",
+  "replacements": {
+    "<div class=\"card-title\">Sessions</div>": "<div class=\"card-title\">会话</div>",
+    "\"Active session keys and per-session overrides.\"": "\"活动会话密钥和单会话设置覆盖。\"",
+    "<span>Active</span>": "<span>活动</span>",
+    "<span>Limit</span>": "<span>限制</span>",
+    "<span>Global</span>": "<span>全局</span>",
+    "<span>Unknown</span>": "<span>未知</span>",
+    "`Store: ${props.result.path}`": "`存储路径：${props.result.path}`",
+    "placeholder=\"Filter by key, agent, label, kind…\"": "placeholder=\"按密钥、代理、标签、类型筛选…\"",
+    "sortHeader(\"key\", \"Key\", \"data-table-key-col\")": "sortHeader(\"key\", \"密钥\", \"data-table-key-col\")",
+    "<th>Label</th>": "<th>标签</th>",
+    "sortHeader(\"kind\", \"Kind\")": "sortHeader(\"kind\", \"类型\")",
+    "sortHeader(\"updated\", \"Updated\")": "sortHeader(\"updated\", \"更新时间\")",
+    "sortHeader(\"tokens\", \"Tokens\")": "sortHeader(\"tokens\", \"令牌数\")",
+    "<th>Thinking</th>": "<th>思考</th>",
+    "<th>Fast</th>": "<th>快速</th>",
+    "<th>Verbose</th>": "<th>详细</th>",
+    "<th>Reasoning</th>": "<th>推理</th>",
+    "No sessions found.": "未找到会话。",
+    "placeholder=\"(optional)\"": "placeholder=\"（可选）\"",
+    "{ value: \"\", label: \"inherit\" }": "{ value: \"\", label: \"继承\" }",
+    "{ value: \"off\", label: \"off (explicit)\" }": "{ value: \"off\", label: \"关闭（显式）\" }",
+    "{ value: \"on\", label: \"on\" }": "{ value: \"on\", label: \"开启\" }",
+    "${level || \"inherit\"}": "${level || \"继承\"}"
+  }
+}

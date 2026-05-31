@@ -1,0 +1,6 @@
+{
+  "file": "src/commands/auth-choice-options.ts",
+  "description": "胜算云认证菜单 - v2026.3.22 已由 plugin manifest 加载",
+  "__note": "auth-choice-options.ts 现在从 resolveManifestProviderAuthChoices() 加载选项",
+  "replacements": {}
+}

@@ -1,0 +1,12 @@
+{
+  "file": "src/commands/onboard-non-interactive/local/auth-choice.plugin-providers.ts",
+  "description": "插件提供商非交互式认证 - 工作区插件信任/交互模式错误提示",
+  "replacements": {
+    "`Auth choice \"${params.authChoice}\" was not matched to a trusted provider plugin.`": "`认证选项 \"${params.authChoice}\" 未匹配到受信任的提供商插件。`",
+    "\"If this provider comes from a workspace plugin, trust/allow it first and retry.\"": "\"如果该提供商来自工作区插件，请先将其设为受信任/允许，然后重试。\"",
+    "`Auth choice \"${params.authChoice}\" matched a provider plugin that is not trusted or enabled for setup.`": "`认证选项 \"${params.authChoice}\" 匹配到了一个尚未受信任或未启用 setup 的提供商插件。`",
+    "`${providerChoice.provider.label} plugin is disabled (${enableResult.reason ?? \"blocked\"}).`": "`${providerChoice.provider.label} 插件已被禁用（${enableResult.reason ?? \"blocked\"}）。`",
+    "`Auth choice \"${params.authChoice}\" requires interactive mode.`": "`认证选项 \"${params.authChoice}\" 需要交互模式。`",
+    "`The ${providerChoice.provider.label} provider plugin does not implement non-interactive setup.`": "`提供商插件 ${providerChoice.provider.label} 尚未实现非交互式 setup。`"
+  }
+}

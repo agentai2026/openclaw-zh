@@ -1,0 +1,12 @@
+{
+  "file": "src/commands/status-all/report-sections.ts",
+  "description": "状态命令 - 报告各区块标题",
+  "replacements": {
+    "title: \"Overview\",": "title: \"概览\",",
+    "title: \"Channels\",": "title: \"通道\",",
+    "title: \"Sessions\",": "title: \"会话\",",
+    "title: \"System events\",": "title: \"系统事件\",",
+    "title: \"Health\",": "title: \"健康状态\",",
+    "title: \"Usage\",": "title: \"用量统计\","
+  }
+}

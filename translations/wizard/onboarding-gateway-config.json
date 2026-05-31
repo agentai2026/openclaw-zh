@@ -1,0 +1,5 @@
+{
+  "file": "src/wizard/setup.gateway-config.ts",
+  "description": "网关配置向导 (端口/绑定/认证/Tailscale)",
+  "replacements": {}
+}

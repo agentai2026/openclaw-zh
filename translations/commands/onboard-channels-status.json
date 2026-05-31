@@ -1,0 +1,7 @@
+{
+  "file": "src/flows/channel-setup.status.ts",
+  "description": "渠道引导 - 渠道状态展示 (channel-setup.status.ts)",
+  "replacements": {
+    "selectionHint: configured ? \"configured · plugin disabled\" : \"not configured\",": "selectionHint: configured ? \"configured (plugin disabled)\" : \"not configured\","
+  }
+}

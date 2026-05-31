@@ -1,0 +1,13 @@
+{
+  "file": "ui/src/ui/chat/chat-welcome.ts",
+  "description": "Dashboard 对话欢迎屏（v2026.4.25 新增）",
+  "replacements": {
+    "\"What can you do?\"": "\"你能做什么？\"",
+    "\"Summarize my recent sessions\"": "\"总结我最近的会话\"",
+    "\"Help me configure a channel\"": "\"帮我配置一个渠道\"",
+    "\"Check system health\"": "\"检查系统健康状态\"",
+    "props.assistantName || \"Assistant\"": "props.assistantName || \"助手\"",
+    "/> Ready to chat</span>": "/> 已就绪</span>",
+    "<p class=\"agent-chat__hint\">Type a message below &middot; <kbd>/</kbd> for commands</p>": "<p class=\"agent-chat__hint\">在下方输入消息 &middot; <kbd>/</kbd> 可使用命令</p>"
+  }
+}

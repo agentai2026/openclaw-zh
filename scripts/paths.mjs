@@ -30,8 +30,10 @@ export function resolveOpenClawTarget(argv = process.argv) {
 }
 
 export function translationsDir() {
-  const t = join(OVERLAY_ROOT, 'translations', 'zh-CN');
-  if (existsSync(t)) return t;
+  const root = join(OVERLAY_ROOT, 'translations');
+  if (existsSync(join(root, 'config.json'))) return root;
+  const legacy = join(OVERLAY_ROOT, 'translations', 'zh-CN');
+  if (existsSync(legacy)) return legacy;
   return join(OVERLAY_ROOT, 'i18n', 'zh-CN');
 }
 

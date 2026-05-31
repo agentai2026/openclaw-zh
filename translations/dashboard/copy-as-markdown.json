@@ -1,0 +1,9 @@
+{
+  "file": "ui/src/ui/chat/copy-as-markdown.ts",
+  "description": "复制为 Markdown 功能",
+  "replacements": {
+    "\"Copy as markdown\"": "\"复制为 Markdown\"",
+    "\"Copied\"": "\"已复制\"",
+    "\"Copy failed\"": "\"复制失败\""
+  }
+}

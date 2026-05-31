@@ -1,0 +1,5 @@
+{
+  "file": "extensions/feishu/src/setup-surface.ts",
+  "description": "飞书扩展初始化引导",
+  "replacements": {}
+}

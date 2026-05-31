@@ -1,0 +1,16 @@
+{
+  "file": "ui/src/ui/views/agents.ts",
+  "description": "Dashboard Agents 管理页面（主框架、工具栏、标签页）",
+  "replacements": {
+    ">No agents</option>": ">暂无代理</option>",
+    "title=\"Copy agent ID to clipboard\"": "title=\"复制代理 ID 到剪贴板\"",
+    "<div class=\"card-title\">Select an agent</div>": "<div class=\"card-title\">选择代理</div>",
+    "<div class=\"card-sub\">Pick an agent to inspect its workspace and tools.</div>": "<div class=\"card-sub\">选择一个代理以查看其工作区和工具。</div>",
+    "label: \"Overview\"": "label: \"概览\"",
+    "label: \"Files\"": "label: \"文件\"",
+    "label: \"Tools\"": "label: \"工具\"",
+    "label: \"Skills\"": "label: \"技能\"",
+    "label: \"Channels\"": "label: \"渠道\"",
+    "label: \"Cron Jobs\"": "label: \"定时任务\""
+  }
+}
