@@ -2,8 +2,8 @@
   "file": "src/cli/banner.ts",
   "description": "CLI 横幅标题",
   "replacements": {
-    "const title = decorativePrefix(\"🦞\", \"OpenClaw\", emojiOptions);": "const title = decorativePrefix(\"🦞\", \"OpenClaw 中文版\", emojiOptions);",
-    "const title = supportsDecorativeEmoji(emojiOptions) ? \"🦞 OPENCLAW 🦞\" : \"OPENCLAW\";": "const title = supportsDecorativeEmoji(emojiOptions) ? \"🦞 OPENCLAW 中文版 🦞\" : \"OPENCLAW 中文版\";",
-    "theme.info(\" OPENCLAW \")": "theme.info(\" OPENCLAW 中文版 \")"
+    "const title = decorativePrefix(\"🦞\", \"OpenClaw\", emojiOptions);": "const title = decorativePrefix(\"🦞\", \"OpenClaw 汉化版\", emojiOptions);",
+    "const title = supportsDecorativeEmoji(emojiOptions) ? \"🦞 OPENCLAW 🦞\" : \"OPENCLAW\";": "const title = supportsDecorativeEmoji(emojiOptions) ? \"🦞 OPENCLAW 汉化版 🦞\" : \"OPENCLAW 汉化版\";",
+    "theme.info(\" OPENCLAW \")": "theme.info(\" OPENCLAW 汉化版 \")"
   }
 }

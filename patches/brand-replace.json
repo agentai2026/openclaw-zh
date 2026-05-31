@@ -3,5 +3,5 @@
     "description": "品牌展示文案替换（勿用 openclaw 小写，会误改 package.json 的 workspace 依赖）",
     "count": 1
   },
-  "OpenClaw": "OpenClaw 中文版"
+  "OpenClaw": "OpenClaw 汉化版"
 }
