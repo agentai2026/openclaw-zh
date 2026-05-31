@@ -1,0 +1,186 @@
+# 手动指定官方 openclaw 版本号进行汉化构建，可选发布 npm / Docker
+name: 指定版本汉化
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_version:
+        description: '官方 openclaw 版本号（与 npm 一致，如 2026.5.28）'
+        required: true
+        type: string
+      force_revision:
+        description: '同版本重发（汉化版加日期后缀，如 2026.5.28-zh.20260531）'
+        required: false
+        default: false
+        type: boolean
+      publish_npm:
+        description: '构建完成后发布到 npm'
+        required: false
+        default: true
+        type: boolean
+      publish_docker:
+        description: 'npm 发布成功后推送 Docker 镜像'
+        required: false
+        default: true
+        type: boolean
+
+concurrency:
+  group: openclaw-zh-version-${{ github.event.inputs.upstream_version }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NPM_PACKAGE: '@agentai2026/openclaw-zh'
+  DOCKER_IMAGE: agentai2027/openclaw-zh
+  UPSTREAM_REPO: openclaw/openclaw
+  NODE_VERSION: '22'
+  NPM_COOLDOWN_MS: 86400000
+  UPSTREAM_VERSION: ${{ github.event.inputs.upstream_version }}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      upstream_sha: ${{ steps.clone.outputs.upstream_sha }}
+      built_version: ${{ steps.bump.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: 检出指定版本上游
+        id: clone
+        run: node scripts/ci-clone-upstream-version.mjs
+
+      - name: 应用汉化并设置版本号
+        id: bump
+        env:
+          OPENCLAW_TARGET: openclaw
+          OVERLAY_ROOT: ${{ github.workspace }}
+          FORCE_REVISION: ${{ github.event.inputs.force_revision == 'true' && '1' || '' }}
+        run: |
+          node scripts/apply-package-zh.js
+          node scripts/apply-i18n.js
+          OPENCLAW_TARGET=openclaw UPSTREAM_VERSION=${{ env.UPSTREAM_VERSION }} \
+            FORCE_REVISION=${{ github.event.inputs.force_revision == 'true' && '1' || '' }} \
+            node scripts/bump-openclaw-version.js
+
+      - name: 安装依赖并构建
+        working-directory: openclaw
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: |
+          set -e
+          corepack enable
+          pnpm install --no-frozen-lockfile --reporter=append-only
+          cd ..
+          OPENCLAW_TARGET=openclaw node scripts/regenerate-schema-artifacts.mjs
+          cd openclaw
+          pnpm canvas:a2ui:bundle || true
+          node scripts/tsdown-build.mjs
+          node scripts/runtime-postbuild.mjs
+          node scripts/build-stamp.mjs || true
+          pnpm build:plugin-sdk:dts || echo "⚠️ plugin-sdk dts 跳过"
+          node --import tsx scripts/write-plugin-sdk-entry-dts.ts || true
+          node --import tsx scripts/canvas-a2ui-copy.ts || true
+          node --import tsx scripts/copy-hook-metadata.ts || true
+          node --import tsx scripts/copy-export-html-templates.ts || true
+          node --import tsx scripts/write-build-info.ts || true
+          node --import tsx scripts/write-cli-startup-metadata.ts || true
+          node --import tsx scripts/write-cli-compat.ts || true
+          pnpm ui:build || true
+
+      - name: 准备发布产物
+        env:
+          OPENCLAW_TARGET: openclaw
+        run: |
+          node scripts/prepare-npm-publish.js
+          cp README.md openclaw/README.md
+          if [ -d openclaw/dist ]; then
+            find openclaw/dist -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -print0 | \
+              xargs -0 sed -i -E 's#(from |import |import\(|require\()"openclaw(["/])#\1"@agentai2026/openclaw-zh\2#g' || true
+          fi
+          echo "汉化版版本: $(node -p 'require(\"./openclaw/package.json\").version')"
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: openclaw-build-${{ github.event.inputs.upstream_version }}
+          path: openclaw/
+          retention-days: 7
+
+  publish:
+    needs: build
+    if: github.event.inputs.publish_npm == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      npm_published: ${{ steps.npm.outputs.npm_published }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PAT || github.token }}
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: openclaw-build-${{ github.event.inputs.upstream_version }}
+          path: openclaw
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 检查 npm 登录身份
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::未配置 NPM_TOKEN"
+            exit 1
+          fi
+          echo "[npm] whoami: $(npm whoami --registry=https://registry.npmjs.org/)"
+
+      - name: 发布 npm
+        id: npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          OPENCLAW_DIR: ${{ github.workspace }}/openclaw
+          UPSTREAM_VERSION: ${{ env.UPSTREAM_VERSION }}
+          UPSTREAM_SHA: ${{ needs.build.outputs.upstream_sha }}
+        run: node scripts/ci-npm-publish.mjs
+
+      - uses: docker/setup-buildx-action@v3
+        if: github.event.inputs.publish_docker == 'true' && steps.npm.outputs.npm_published == 'true'
+
+      - uses: docker/login-action@v3
+        if: github.event.inputs.publish_docker == 'true' && steps.npm.outputs.npm_published == 'true'
+        with:
+          username: agentai2027
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - uses: docker/build-push-action@v6
+        if: github.event.inputs.publish_docker == 'true' && steps.npm.outputs.npm_published == 'true'
+        with:
+          context: .
+          file: docker/Dockerfile.publish
+          push: true
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:${{ needs.build.outputs.built_version }}
+            ${{ env.DOCKER_IMAGE }}:latest
+
+      - name: 更新发布状态
+        if: always() && steps.npm.outputs.npm_published == 'true'
+        env:
+          UPSTREAM_VERSION: ${{ env.UPSTREAM_VERSION }}
+          UPSTREAM_SHA: ${{ needs.build.outputs.upstream_sha }}
+          BUILT_VERSION: ${{ needs.build.outputs.built_version }}
+        run: node scripts/ci-commit-release-state.mjs

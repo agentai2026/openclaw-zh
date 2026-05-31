@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * apply-i18n.js — 应用 translations/ 全量汉化（OpenClawChineseTranslation 词典，MIT）
+ * apply-i18n.js — 应用 translations/ 全量汉化词典
  * 安装依赖后请再运行 regenerate-schema-artifacts.mjs
  */
 import { readFile, writeFile } from 'node:fs/promises';

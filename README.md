@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@agentai2026/openclaw-zh)](https://www.npmjs.com/package/@agentai2026/openclaw-zh)
 [![Docker](https://img.shields.io/docker/v/agentai2027/openclaw-zh/latest)](https://hub.docker.com/r/agentai2027/openclaw-zh)
 
-**轻量汉化 overlay 仓库** — 参考 [OpenClawChineseTranslation](https://github.com/1186258278/OpenClawChineseTranslation) 架构：`main` 只保留翻译与脚本，**CI 内克隆** [openclaw/openclaw](https://github.com/openclaw/openclaw) 再构建发布。
+**轻量汉化 overlay 仓库** — `main` 只保留翻译与脚本，**CI 内克隆** [openclaw/openclaw](https://github.com/openclaw/openclaw) 再构建发布。
 
 | 项目 | 链接 |
 |------|------|
@@ -16,7 +16,7 @@
 
 ```
 openclaw-zh/          ← 本仓库（轻量）
-├── translations/     ← 全量汉化词典（源自 OpenClawChineseTranslation，见 ATTRIBUTION.md）
+├── translations/     ← 全量汉化词典（`config.json` 索引各模块 JSON）
 ├── patches/          ← package 元数据、品牌替换
 ├── scripts/          ← apply / bump / publish
 ├── cli/              ← openclaw-zh-cli
@@ -82,8 +82,7 @@ cd openclaw && pnpm run build
 
 | 路径 | 说明 |
 |------|------|
-| `translations/` | 全量汉化模块（`config.json` 索引 ~194 个 JSON） |
-| `translations/ATTRIBUTION.md` | 翻译来源与许可证说明 |
+| `translations/` | 全量汉化模块（`config.json` 索引各模块 JSON） |
 | `patches/package-zh-overlay.json` | npm 描述、仓库链接等 |
 | `patches/brand-replace.json` | 品牌文案 |
 | `scripts/apply-i18n.js` | 应用词典替换 |

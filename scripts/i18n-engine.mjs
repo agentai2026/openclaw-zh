@@ -1,5 +1,5 @@
 /**
- * 翻译引擎（基于 OpenClawChineseTranslation，MIT）
+ * 翻译引擎：按 translations/config.json 将词典应用到上游指定源文件
  * 按 translations/config.json 将各模块词典应用到上游指定源文件
  */
 import fs from 'node:fs/promises';

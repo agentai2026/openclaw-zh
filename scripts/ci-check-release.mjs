@@ -38,11 +38,33 @@ async function fetchUpstream() {
 async function npmPackageState() {
   const url = `https://registry.npmjs.org/${NPM_PACKAGE.replace('/', '%2f')}`;
   const res = await fetch(url);
-  if (res.ok) return { state: 'ok' };
   const text = await res.text();
+
+  if (res.ok) {
+    try {
+      const json = JSON.parse(text);
+      const unpub = json.time?.unpublished;
+      if (unpub) {
+        const at = typeof unpub === 'string' ? unpub : unpub.time;
+        if (at) return { state: 'unpublished', unpublishedAt: new Date(at) };
+      }
+      return { state: 'ok' };
+    } catch {
+      return { state: 'ok' };
+    }
+  }
+
   const m = text.match(/Unpublished on ([0-9TZ.:+-]+)/i);
   if (m) return { state: 'unpublished', unpublishedAt: new Date(m[1]) };
   return { state: 'missing' };
+}
+
+function cooldownFromPending(pending) {
+  if (!pending?.retry_after) return null;
+  const retryAfter = new Date(pending.retry_after);
+  if (Number.isNaN(retryAfter.getTime())) return null;
+  if (Date.now() >= retryAfter.getTime()) return null;
+  return { inCooldown: true, retryAfter };
 }
 
 function inCooldown(unpublishedAt) {
@@ -71,7 +93,16 @@ async function main() {
       in_npm_cooldown = 'true';
       npm_retry_after = cd.retryAfter.toISOString();
       console.log(
-        `[check] npm 包已于 ${npm.unpublishedAt.toISOString()} 整包下架，${cd.retryAfter.toISOString()} 后可再发布`,
+        `::warning::npm 整包已下架（${npm.unpublishedAt.toISOString()}），${cd.retryAfter.toISOString()} 前无法 npm install；本次将跳过构建`,
+      );
+    }
+  } else if (pending) {
+    const cd = cooldownFromPending(pending);
+    if (cd) {
+      in_npm_cooldown = 'true';
+      npm_retry_after = cd.retryAfter.toISOString();
+      console.log(
+        `::warning::publish-pending 记录冷却中，${cd.retryAfter.toISOString()} 后再构建发布`,
       );
     }
   }

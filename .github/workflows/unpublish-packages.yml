@@ -46,6 +46,8 @@ jobs:
         run: bash scripts/delete-docker-tags.sh
 
       - name: 完成
+        if: always()
         run: |
           echo "npm 与 Docker 删除步骤已执行"
-          echo "本地验证: npm view @agentai2026/openclaw-zh 应 404"
+          echo "若 npm 仍有版本: 到 https://www.npmjs.com/package/@agentai2026/openclaw-zh → Package settings → Delete package"
+          npm view @agentai2026/openclaw-zh version 2>/dev/null || echo "npm: 包已不存在 (404) ✓"

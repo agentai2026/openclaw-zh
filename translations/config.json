@@ -28,14 +28,12 @@
       "wizard/onboarding.json",
       "wizard/onboarding-gateway-config.json",
       "wizard/security.json",
-      "wizard/security-note.json",
       "wizard/finalize.json",
       "wizard/onboarding-finalize.json",
       "wizard/setup-plugin-config.json"
     ],
     "gateway": [
       "gateway/gateway-config-prompts.shared.json",
-      "gateway/control-ui-csp.json",
       "gateway/auth-messages.json"
     ],
     "shared": [
@@ -84,7 +82,6 @@
       "commands/commands-session.json",
       "commands/commands-session-abort.json",
       "commands/daemon-install-helpers.json",
-      "commands/onboard-channels-clawapp.json",
       "commands/agent-runtime-label.json",
       "commands/commands-models.json",
       "commands/commands-subagents-main.json",

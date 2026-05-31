@@ -1,7 +1,0 @@
-{
-  "file": "src/commands/auth-choice.apply.api-providers.ts",
-  "description": "胜算云认证流程 - v2026.3.22 已迁移至 extension plugin 架构",
-  "__note": "提供商注册已由 extensions/shengsuanyun/ 处理",
-  "replacements": {
-  }
-}
