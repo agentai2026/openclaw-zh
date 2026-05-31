@@ -1,13 +1,15 @@
 <div align="center">
 
 # OpenClaw 汉化版
+
 <img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="280" />
-**OpenClaw 中文界面 · 一键安装 · 自动跟进官方更新**
 
 [![npm](https://img.shields.io/npm/v/@agentai2026/openclaw-zh?label=npm)](https://www.npmjs.com/package/@agentai2026/openclaw-zh)
 [![Docker](https://img.shields.io/docker/v/agentai2027/openclaw-zh/latest?label=docker)](https://hub.docker.com/r/agentai2027/openclaw-zh)
 [![License](https://img.shields.io/github/license/agentai2026/openclaw-zh?label=license)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+
+<p><strong>OpenClaw 中文界面 · 一键安装 · 自动跟进官方更新</strong></p>
 
 [功能特性](#-功能特性) ·
 [安装](#-安装) ·
