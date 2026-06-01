@@ -1,11 +1,11 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * CI：判断本次是否构建/发布（含上游变更与 npm 发布失败后的每小时重试）
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { appendFileSync } from 'node:fs';
 
-const NPM_PACKAGE = process.env.NPM_PACKAGE || '@agentai2026/openclaw-zh';
+const NPM_PACKAGE = process.env.NPM_PACKAGE || '@agentai2027/openclaw-zh';
 const UPSTREAM_REPO = process.env.UPSTREAM_REPO || 'openclaw/openclaw';
 const FORCE = process.env.FORCE === 'true';
 const NPM_COOLDOWN_MS = Number(process.env.NPM_COOLDOWN_MS || 24 * 60 * 60 * 1000);

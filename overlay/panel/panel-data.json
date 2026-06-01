@@ -1,4 +1,4 @@
-{
+﻿{
   "faq": [
     {
       "id": "quick-start",
@@ -53,12 +53,12 @@
     {
       "id": "still-english",
       "question": "安装后界面还是英文？",
-      "answer": "请使用汉化版包：\n```\nnpm install -g @agentai2026/openclaw-zh@latest\n```\n\n或从 https://github.com/agentai2026/openclaw-zh 按 README 本地构建。"
+      "answer": "请使用汉化版包：\n```\nnpm install -g @agentai2027/openclaw-zh@latest\n```\n\n或从 https://github.com/agentai2026/openclaw-zh 按 README 本地构建。"
     },
     {
       "id": "how-to-update",
       "question": "如何更新汉化版？",
-      "answer": "```\nnpm update -g @agentai2026/openclaw-zh\n```\n\nDocker：拉取最新镜像后重启容器。仓库：https://github.com/agentai2026/openclaw-zh"
+      "answer": "```\nnpm update -g @agentai2027/openclaw-zh\n```\n\nDocker：拉取最新镜像后重启容器。仓库：https://github.com/agentai2026/openclaw-zh"
     }
   ],
   "shortcuts": [
@@ -97,11 +97,11 @@
     {
       "id": "openclaw-zh-update",
       "name": "OpenClaw 汉化版更新检测",
-      "description": "检测 @agentai2026/openclaw-zh 是否有新版本，并可通过 npm 一键升级。",
+      "description": "检测 @agentai2027/openclaw-zh 是否有新版本，并可通过 npm 一键升级。",
       "version": "1.0.0",
       "status": "available",
-      "install": "npm update -g @agentai2026/openclaw-zh",
-      "aiPrompt": "请帮我检查并更新 @agentai2026/openclaw-zh 汉化版到最新版本"
+      "install": "npm update -g @agentai2027/openclaw-zh",
+      "aiPrompt": "请帮我检查并更新 @agentai2027/openclaw-zh 汉化版到最新版本"
     },
     {
       "id": "official-plugins",
@@ -133,7 +133,7 @@
     "upstream": "https://github.com/openclaw/openclaw",
     "docs": "https://docs.openclaw.ai",
     "authorSite": "https://agentai2026.github.io/my-website/",
-    "npm": "https://www.npmjs.com/package/@agentai2026/openclaw-zh",
+    "npm": "https://www.npmjs.com/package/@agentai2027/openclaw-zh",
     "license": "MIT License"
   }
 }

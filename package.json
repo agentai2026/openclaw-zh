@@ -1,5 +1,5 @@
-{
-  "name": "@agentai2026/openclaw-zh-overlay",
+﻿{
+  "name": "@agentai2027/openclaw-zh-overlay",
   "version": "1.0.0",
   "private": true,
   "description": "OpenClaw 中文汉化：翻译 + 功能面板 + 自动打包发布脚本（非官方）",

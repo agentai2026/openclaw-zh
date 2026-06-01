@@ -1,9 +1,1 @@
-{
-  "status": "pending",
-  "reason": "npm_permission_denied",
-  "version": "2026.5.28-zh",
-  "upstream_version": "2026.5.28",
-  "upstream_sha": "c69a8d6",
-  "last_attempt_at": "2026-06-01T11:25:38.114Z",
-  "last_error": "npm notice\nnpm notice 📦  @agentai2026/openclaw-zh@2026.5.28-zh\nnpm notice Tarball Contents\nnpm notice 2.4MB CHANGELOG.md\nnpm notice 1.2kB LICENSE\nnpm notice 10.4kB README.md\nnpm notice 1.6kB THIRD_PARTY_NOTICES.md\nnpm notice 135B dist/a2ui-CY_4-9mQ.js\nnpm notice 5.7kB dist/a2ui-DywYUwps.js\nnpm notice 2.8kB dist/a2ui-shared-DDC8Xhci.js\nnpm notice 16.6kB dist/abap-LtYK6g-v.js\nnpm notice 12.1kB dist/abort-BFYNEjWI.js\nnpm notice 2.6kB dist/abort-cutoff-fnVhj49B.js\nnpm notice 926B dist/abort-cutoff.runtime-CublbTkm.js\nnpm notice 52B dist/abort-cutoff.runtime.js\nnpm notice 2.6kB dist/abort-primitives-7-OquezL.js\nnpm notice 365B dist/abort-signal-B53kbSiw.js\nnpm notice 36B dist/abort.runtime-CKviLU0L.js\nnpm notice 36B dist/abort.runtime-DX6vo4yJ.js\nnpm notice 153B dist/abort.runtime-oeKFYmtx.js\n"
-}
+{}

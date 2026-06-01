@@ -1,10 +1,10 @@
-<div align="center">
+﻿<div align="center">
 
 # OpenClaw 汉化版
 
 <img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="280" />
 
-[![npm](https://img.shields.io/npm/v/@agentai2026/openclaw-zh?label=npm)](https://www.npmjs.com/package/@agentai2026/openclaw-zh)
+[![npm](https://img.shields.io/npm/v/@agentai2027/openclaw-zh?label=npm)](https://www.npmjs.com/package/@agentai2027/openclaw-zh)
 [![Docker](https://img.shields.io/docker/v/agentai2027/openclaw-zh/latest?label=docker)](https://hub.docker.com/r/agentai2027/openclaw-zh)
 [![License](https://img.shields.io/github/license/agentai2026/openclaw-zh?label=license)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -46,7 +46,7 @@
 | | 说明 |
 |---|------|
 | 🇨🇳 **全中文界面** | 控制台、设置、向导、CLI 等大量文案已汉化 |
-| 📦 **npm 一键安装** | 包名 `@agentai2026/openclaw-zh`，和装普通软件一样 |
+| 📦 **npm 一键安装** | 包名 `@agentai2027/openclaw-zh`，和装普通软件一样 |
 | 🔄 **自动跟官方** | 定时检测官方新版本，有更新就自动打包（见 Actions） |
 | 🧩 **功能面板** | 控制台顶部齿轮：帮助、快捷指令、插件、更新日志（源码另见 [OpenClaw-Panel](https://github.com/agentai2026/OpenClaw-Panel)） |
 | 🐳 **Docker 镜像** | `agentai2027/openclaw-zh`，不想装 Node 也能跑 |
@@ -62,21 +62,21 @@
 
 ```bash
 # 跟踪最新构建（约每小时更新）
-npm install -g @agentai2026/openclaw-zh@nightly
+npm install -g @agentai2027/openclaw-zh@nightly
 
 # 稳定标签（发布成功时与 nightly 一致）
-npm install -g @agentai2026/openclaw-zh@latest
+npm install -g @agentai2027/openclaw-zh@latest
 ```
 
 ```bash
 # 更新到最新汉化版
-npm update -g @agentai2026/openclaw-zh
+npm update -g @agentai2027/openclaw-zh
 ```
 
 ```bash
 # 若装过官方 openclaw，建议先卸再装汉化版
 npm uninstall -g openclaw
-npm install -g @agentai2026/openclaw-zh@latest
+npm install -g @agentai2027/openclaw-zh@latest
 ```
 
 ### Docker
@@ -143,7 +143,7 @@ openclaw gateway run
 查当前线上版本：
 
 ```bash
-npm view @agentai2026/openclaw-zh version
+npm view @agentai2027/openclaw-zh version
 ```
 
 ---
@@ -222,7 +222,7 @@ npm 发布成功后，CI 会自动：
 <summary><b>npm 安装报 404 / ETARGET / Unpublished？</b></summary>
 
 多半是 npm 上**还没发布成功**，或**刚删过整包**（要等约 24 小时才能再发同名包）。  
-到 [npm 包页面](https://www.npmjs.com/package/@agentai2026/openclaw-zh) 看有没有版本；或等 CI 跑完「定时发布」且日志出现 `[npm] 发布成功`。
+到 [npm 包页面](https://www.npmjs.com/package/@agentai2027/openclaw-zh) 看有没有版本；或等 CI 跑完「定时发布」且日志出现 `[npm] 发布成功`。
 
 </details>
 
@@ -236,7 +236,7 @@ npm 发布成功后，CI 会自动：
 <details>
 <summary><b>和官方 openclaw 能同时装吗？</b></summary>
 
-不建议。先 `npm uninstall -g openclaw`，再装 `@agentai2026/openclaw-zh`。
+不建议。先 `npm uninstall -g openclaw`，再装 `@agentai2027/openclaw-zh`。
 
 </details>
 
@@ -294,12 +294,12 @@ node openclaw.mjs gateway run
 
 **npm 汉化包**
 
-[@agentai2026/openclaw-zh](https://www.npmjs.com/package/@agentai2026/openclaw-zh)
+[@agentai2027/openclaw-zh](https://www.npmjs.com/package/@agentai2027/openclaw-zh)
 
-https://www.npmjs.com/package/@agentai2026/openclaw-zh
+https://www.npmjs.com/package/@agentai2027/openclaw-zh
 
 ```bash
-npm install -g @agentai2026/openclaw-zh@latest
+npm install -g @agentai2027/openclaw-zh@latest
 ```
 
 **可视化功能面板仓库**
@@ -311,7 +311,7 @@ https://github.com/agentai2026/OpenClaw-Panel
 ---
 
 [提交 Issue](https://github.com/agentai2026/openclaw-zh/issues) ·
-[npm 包](https://www.npmjs.com/package/@agentai2026/openclaw-zh) ·
+[npm 包](https://www.npmjs.com/package/@agentai2027/openclaw-zh) ·
 [可视化面板](https://github.com/agentai2026/OpenClaw-Panel) ·
 [维护者配置](./SETUP_GUIDE.md) ·
 [OpenClaw 官方](https://github.com/openclaw/openclaw)

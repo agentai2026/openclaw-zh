@@ -1,13 +1,13 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
- * 删除 npm 上 @agentai2026/openclaw-zh 的全部已发布版本
+ * 删除 npm 上 @agentai2027/openclaw-zh 的全部已发布版本
  */
 import { execSync } from 'node:child_process';
 import { writeFileSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
-const PKG = '@agentai2026/openclaw-zh';
+const PKG = '@agentai2027/openclaw-zh';
 const token = (process.env.NPM_TOKEN || '').trim();
 
 if (!token) {

@@ -1,4 +1,4 @@
-# 手动指定官方 openclaw 版本号进行汉化构建，可选发布 npm / Docker
+﻿# 手动指定官方 openclaw 版本号进行汉化构建，可选发布 npm / Docker
 name: 指定版本汉化
 
 on:
@@ -34,7 +34,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  NPM_PACKAGE: '@agentai2026/openclaw-zh'
+  NPM_PACKAGE: '@agentai2027/openclaw-zh'
   DOCKER_IMAGE: agentai2027/openclaw-zh
   UPSTREAM_REPO: openclaw/openclaw
   NODE_VERSION: '22'
@@ -112,7 +112,7 @@ jobs:
           cp README.md openclaw/README.md
           if [ -d openclaw/dist ]; then
             find openclaw/dist -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -print0 | \
-              xargs -0 sed -i -E 's#(from |import |import\(|require\()"openclaw(["/])#\1"@agentai2026/openclaw-zh\2#g' || true
+              xargs -0 sed -i -E 's#(from |import |import\(|require\()"openclaw(["/])#\1"@agentai2027/openclaw-zh\2#g' || true
           fi
           echo "汉化版版本: $(node -p 'require(\"./openclaw/package.json\").version')"
 

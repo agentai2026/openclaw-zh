@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * CI：发布 npm（预检删包冷却、版本已存在、409 冲突）
  * 退出码 0=成功或可下小时重试；1=需人工处理的硬错误
@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
-const NPM_PACKAGE = process.env.NPM_PACKAGE || '@agentai2026/openclaw-zh';
+const NPM_PACKAGE = process.env.NPM_PACKAGE || '@agentai2027/openclaw-zh';
 const OPENCLAW_DIR = process.env.OPENCLAW_DIR || join(ROOT, 'openclaw');
 const NPM_COOLDOWN_MS = Number(process.env.NPM_COOLDOWN_MS || 24 * 60 * 60 * 1000);
 const PENDING_PATH = join(ROOT, '.github/publish-pending.json');
@@ -86,7 +86,7 @@ async function main() {
   }
   console.log(`[npm] whoami: ${whoami}`);
   console.log(
-    `[npm] 提示: 发布 ${NPM_PACKAGE} 需要 token 对该作用域有 Read and write（Granular 令牌请在 Organizations 授权 agentai2026，或改用 Classic Automation）`,
+    `[npm] 提示: 发布 ${NPM_PACKAGE} 需要 token 对 @agentai2027 作用域有 Read and write（Granular：Packages 选该包或账号 agentai2027；或 Classic Automation）`,
   );
 
   const pkgPath = join(OPENCLAW_DIR, 'package.json');
@@ -163,7 +163,7 @@ async function main() {
   if (/403|forbidden|not authorized|e403/.test(lower)) {
     printPublishFailureSummary(
       'permission_denied',
-      '当前 NPM_TOKEN 可能无权发布 @agentai2026/openclaw-zh：Granular 令牌需对 Organizations「agentai2026」选 Read and write，或登录 agentai2026 账号用 Classic Automation',
+      '当前 NPM_TOKEN 可能无权发布 @agentai2027/openclaw-zh：请用 agentai2027 账号建 Granular（该包 Read and write + Bypass 2FA）或 Classic Automation',
     );
     writePending({
       status: 'pending',

@@ -1,4 +1,4 @@
-# 手动删除已发布的 npm 包版本 + Docker 镜像标签（不可恢复，慎用）
+﻿# 手动删除已发布的 npm 包版本 + Docker 镜像标签（不可恢复，慎用）
 name: 删除已发布包
 
 on:
@@ -49,5 +49,5 @@ jobs:
         if: always()
         run: |
           echo "npm 与 Docker 删除步骤已执行"
-          echo "若 npm 仍有版本: 到 https://www.npmjs.com/package/@agentai2026/openclaw-zh → Package settings → Delete package"
-          npm view @agentai2026/openclaw-zh version 2>/dev/null || echo "npm: 包已不存在 (404) ✓"
+          echo "若 npm 仍有版本: 到 https://www.npmjs.com/package/@agentai2027/openclaw-zh → Package settings → Delete package"
+          npm view @agentai2027/openclaw-zh version 2>/dev/null || echo "npm: 包已不存在 (404) ✓"

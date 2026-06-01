@@ -1,4 +1,4 @@
-# 定时发布：检测上游 → 汉化构建 → npm + Docker（发布失败则每小时重试）
+﻿# 定时发布：检测上游 → 汉化构建 → npm + Docker（发布失败则每小时重试）
 name: 定时发布
 
 on:
@@ -18,7 +18,7 @@ concurrency:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-  NPM_PACKAGE: '@agentai2026/openclaw-zh'
+  NPM_PACKAGE: '@agentai2027/openclaw-zh'
   DOCKER_IMAGE: agentai2027/openclaw-zh
   UPSTREAM_REPO: openclaw/openclaw
   NODE_VERSION: '22'
@@ -147,7 +147,7 @@ jobs:
           cp README.md openclaw/README.md
           if [ -d openclaw/dist ]; then
             find openclaw/dist -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -print0 | \
-              xargs -0 sed -i -E 's#(from |import |import\(|require\()"openclaw(["/])#\1"@agentai2026/openclaw-zh\2#g' || true
+              xargs -0 sed -i -E 's#(from |import |import\(|require\()"openclaw(["/])#\1"@agentai2027/openclaw-zh\2#g' || true
           fi
 
       - uses: actions/upload-artifact@v5

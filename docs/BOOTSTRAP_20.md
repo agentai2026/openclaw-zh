@@ -1,6 +1,6 @@
-# npm 首发 20 版（明天执行清单）
+﻿# npm 首发 20 版（明天执行清单）
 
-目标：让 [@agentai2026/openclaw-zh](https://www.npmjs.com/package/@agentai2026/openclaw-zh) 上**至少有 20 个可见版本**，之后**不再**每小时自动跟官方全部更新。
+目标：让 [@agentai2027/openclaw-zh](https://www.npmjs.com/package/@agentai2027/openclaw-zh) 上**至少有 20 个可见版本**，之后**不再**每小时自动跟官方全部更新。
 
 ## 选哪 20 个？
 
@@ -24,7 +24,7 @@
    - `skip_policy_lock`：保持 **false**（跑完会自动关掉定时跟官方）  
 4. 等 workflow 跑完（**顺序**触发 20 次「指定版本汉化」，单次约 30–90 分钟，总计可能 **10–20+ 小时**）  
 5. 完成后检查：  
-   - [npm 包页面](https://www.npmjs.com/package/@agentai2026/openclaw-zh) 应能看到多个 `x.x.x-zh`  
+   - [npm 包页面](https://www.npmjs.com/package/@agentai2027/openclaw-zh) 应能看到多个 `x.x.x-zh`  
    - `.github/release-policy.json` 里 `follow_upstream` 应为 **`false`**  
    - **「定时发布」** 之后每小时只会检查，**不会再**因官方新版本自动全量构建  
 

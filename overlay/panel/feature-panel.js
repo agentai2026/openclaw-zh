@@ -1,4 +1,4 @@
-/* OpenClaw 汉化版 - 功能面板 (agentai2026/openclaw-zh) */
+﻿/* OpenClaw 汉化版 - 功能面板 (agentai2026/openclaw-zh) */
 
 (function() {
   'use strict';
@@ -570,7 +570,7 @@
     }
   }
 
-  const NPM_ZH_PACKAGE = '@agentai2026/openclaw-zh';
+  const NPM_ZH_PACKAGE = '@agentai2027/openclaw-zh';
 
   function getOpenClawApp() {
     return document.querySelector('openclaw-app');
@@ -674,7 +674,7 @@
       }
       case 'restore-original':
         await copyToClipboard(
-          'npm uninstall -g @agentai2026/openclaw-zh && npm install -g openclaw',
+          'npm uninstall -g @agentai2027/openclaw-zh && npm install -g openclaw',
         );
         showToast('切换 npm 包只能在终端执行，命令已复制', 'info');
         break;
@@ -867,3 +867,4 @@
   }
 
 })();
+

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="192" />
 
@@ -63,14 +63,14 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 - 日历每 **75 天** 提醒：换新 Token → 更新 Secret → 跑一次「定时发布」  
 - **Bypass 2FA**：勾选（CI 必须）  
 - 包权限二选一（不要只选「所有包」却把组织设成禁止）：  
-  - **Only select packages** → 选 `@agentai2026/openclaw-zh` → Read and write  
-  - 或 **Organizations** → `agentai2026` → **Read and write**（用 `agentai2027` 登录时尤其需要）  
+  - **Only select packages** → 选 `@agentai2027/openclaw-zh` → Read and write  
+  - 或 **All packages**（账号 `agentai2027` 下全部包）→ Read and write  
 - 贴到 GitHub：`Settings → Secrets → Actions → NPM_TOKEN`（**不要写进仓库代码**）
 
 ### 确认有权发包
 
-- 包在组织下：https://www.npmjs.com/settings/agentai2026/packages  
-- 登录账号设置：https://www.npmjs.com/settings/agentai2027/tokens（若你用 agentai2027 账号建 token）
+- 包页面：https://www.npmjs.com/package/@agentai2027/openclaw-zh（首次发布成功后出现）  
+- Token 管理：https://www.npmjs.com/settings/agentai2027/tokens
 
 ### 验证是否生效
 
@@ -104,7 +104,7 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 ### 怎样算发布成功？
 
 1. publish 日志有 **`[npm] 发布成功`**  
-2. 本机：`npm view @agentai2026/openclaw-zh version` 有结果  
+2. 本机：`npm view @agentai2027/openclaw-zh version` 有结果  
 
 只有 build 绿、publish 写冷却 → 用户仍装不上。
 
@@ -114,7 +114,7 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 
 | | 会过期吗 |
 |---|----------|
-| 已发布的 `@agentai2026/openclaw-zh` | **一般不会**，可长期 install |
+| 已发布的 `@agentai2027/openclaw-zh` | **一般不会**，可长期 install |
 | `NPM_TOKEN` | **会**（Granular 约 90 天） |
 | Actions 的 Artifacts zip | 约 90 天，和 npm 无关 |
 
@@ -127,7 +127,7 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 - 没事别用 **删除已发布包**；确认框要输入 `DELETE`
 
 手动删：  
-https://www.npmjs.com/package/@agentai2026/openclaw-zh → Package settings → Delete package
+https://www.npmjs.com/package/@agentai2027/openclaw-zh → Package settings → Delete package
 
 ---
 
@@ -137,7 +137,7 @@ https://www.npmjs.com/package/@agentai2026/openclaw-zh → Package settings → 
 
 - [ ] Actions「定时发布」是否成功  
 - [ ] publish 有 `[npm] 发布成功`  
-- [ ] `npm view @agentai2026/openclaw-zh version` 正常  
+- [ ] `npm view @agentai2027/openclaw-zh version` 正常  
 
 **每 2～3 个月（Granular Token）**
 
@@ -164,9 +164,9 @@ https://www.npmjs.com/package/@agentai2026/openclaw-zh → Package settings → 
 
 <div align="center">
 
-**npm 包** · [@agentai2026/openclaw-zh](https://www.npmjs.com/package/@agentai2026/openclaw-zh)
+**npm 包** · [@agentai2027/openclaw-zh](https://www.npmjs.com/package/@agentai2027/openclaw-zh)
 
-https://www.npmjs.com/package/@agentai2026/openclaw-zh
+https://www.npmjs.com/package/@agentai2027/openclaw-zh
 
 **可视化面板** · [OpenClaw-Panel](https://github.com/agentai2026/OpenClaw-Panel)
 

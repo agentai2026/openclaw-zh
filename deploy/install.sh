@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # OpenClaw 汉化版 - Linux/macOS 一键安装
 # 用法: curl -fsSL https://raw.githubusercontent.com/agentai2026/openclaw-zh/main/deploy/install.sh | bash
 
 set -euo pipefail
 
-NPM_PACKAGE="@agentai2026/openclaw-zh"
+NPM_PACKAGE="@agentai2027/openclaw-zh"
 MIN_NODE_MAJOR=22
 REPO_URL="https://github.com/agentai2026/openclaw-zh"
 

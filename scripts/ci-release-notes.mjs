@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * 生成汉化版发布说明（Git 提交说明 + CHANGELOG 条目）
  * 风格参考：feat: 适配上游 vX / chore: 发布 vX-zh
@@ -38,7 +38,7 @@ export function buildReleaseNotes(input) {
     bullets = [
       `跟进官方 openclaw **${upstream_version}**${shaPart}`,
       '同步 `translations/` 全量汉化与控制台功能面板',
-      `npm 安装：@agentai2026/openclaw-zh@${built_version}`,
+      `npm 安装：@agentai2027/openclaw-zh@${built_version}`,
     ];
   } else if (isRevision) {
     type = 'chore';
@@ -46,14 +46,14 @@ export function buildReleaseNotes(input) {
     bullets = [
       `官方版本仍为 **${upstream_version || prevUpstream}**${shaPart}`,
       '仅更新汉化词条、`overlay/panel/` 或构建脚本后重新发布',
-      `npm 安装：@agentai2026/openclaw-zh@${built_version}`,
+      `npm 安装：@agentai2027/openclaw-zh@${built_version}`,
     ];
   } else {
     type = 'chore';
     subject = `chore: 发布汉化版 ${built_version}`;
     bullets = [
       `对应官方 **${upstream_version}**${shaPart}`,
-      `npm 安装：@agentai2026/openclaw-zh@${built_version}`,
+      `npm 安装：@agentai2027/openclaw-zh@${built_version}`,
     ];
   }
 
