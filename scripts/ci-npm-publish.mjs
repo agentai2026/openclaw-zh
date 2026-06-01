@@ -147,7 +147,18 @@ async function main() {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env },
     });
-    console.log(`[npm] 发布成功 ${NPM_PACKAGE}@${VER}`);
+    console.log(`[npm] 发布成功 ${NPM_PACKAGE}@${VER} (tag: nightly)`);
+    try {
+      execSync(`npm dist-tag add ${NPM_PACKAGE}@${VER} latest`, {
+        cwd: OPENCLAW_DIR,
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env },
+      });
+      console.log(`[npm] dist-tag latest -> ${VER}`);
+    } catch (e) {
+      console.log(`::warning::更新 latest 标签失败: ${e.stderr || e.message}`);
+    }
     clearPending();
     setOutput('npm_published', 'true');
     process.exit(0);

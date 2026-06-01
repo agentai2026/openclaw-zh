@@ -131,6 +131,13 @@ https://www.npmjs.com/package/@agentai2027/openclaw-zh → Package settings → 
 
 ---
 
+## 📝 改仓库文件时注意
+
+- 文本文件请用 **UTF-8 无 BOM**（根目录有 `.editorconfig`；CI 会跑 `scripts/check-no-bom.mjs`）
+- **不要**用 PowerShell `Set-Content -Encoding UTF8` 批量改 JSON（会写入 BOM，导致 `pnpm/action-setup` 失败）
+
+---
+
 ## ✅ 维护清单
 
 **每 1～2 周**

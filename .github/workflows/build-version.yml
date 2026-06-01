@@ -54,6 +54,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: 检查 UTF-8 BOM
+        run: node scripts/check-no-bom.mjs
+
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}

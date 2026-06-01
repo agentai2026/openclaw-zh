@@ -42,6 +42,9 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: 检查 UTF-8 BOM
+        run: node scripts/check-no-bom.mjs
+
       - name: 检测上游 / 待发布 / npm 冷却
         id: check
         env:
@@ -154,7 +157,7 @@ jobs:
         with:
           name: openclaw-build-nightly
           path: openclaw/
-          retention-days: 2
+          retention-days: 7
 
   publish:
     needs: [check-upstream, build]
