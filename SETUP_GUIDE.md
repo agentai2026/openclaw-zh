@@ -61,11 +61,16 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 - 选 **90 days**（或 Custom 能选多远选多远）  
 - **不是包 3 个月就没了**，只是发布密码过期  
 - 日历每 **75 天** 提醒：换新 Token → 更新 Secret → 跑一次「定时发布」  
-- 包权限：`@agentai2026/openclaw-zh` → **Read and write**
+- **Bypass 2FA**：勾选（CI 必须）  
+- 包权限二选一（不要只选「所有包」却把组织设成禁止）：  
+  - **Only select packages** → 选 `@agentai2026/openclaw-zh` → Read and write  
+  - 或 **Organizations** → `agentai2026` → **Read and write**（用 `agentai2027` 登录时尤其需要）  
+- 贴到 GitHub：`Settings → Secrets → Actions → NPM_TOKEN`（**不要写进仓库代码**）
 
 ### 确认有权发包
 
-https://www.npmjs.com/settings/agentai2026/packages  
+- 包在组织下：https://www.npmjs.com/settings/agentai2026/packages  
+- 登录账号设置：https://www.npmjs.com/settings/agentai2027/tokens（若你用 agentai2027 账号建 token）
 
 ### 验证是否生效
 

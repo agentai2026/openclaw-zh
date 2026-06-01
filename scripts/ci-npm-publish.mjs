@@ -32,6 +32,23 @@ function npmView(args) {
   }
 }
 
+function npmWhoami() {
+  try {
+    return execSync('npm whoami --registry=https://registry.npmjs.org/', {
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env },
+    }).trim();
+  } catch (e) {
+    return { error: true, message: `${e.stderr || ''}${e.stdout || ''}${e.message}` };
+  }
+}
+
+function printPublishFailureSummary(reason, detail = '') {
+  console.error(`::error::npm 发布未成功 (${reason})`);
+  if (detail) console.error(`::error::${detail}`);
+}
+
 function writePending(data) {
   writeFileSync(PENDING_PATH, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
   console.log('[npm] 已写入 publish-pending.json，下小时定时任务将重试');
@@ -58,6 +75,19 @@ async function main() {
     console.error('::error::未配置 NPM_TOKEN');
     process.exit(1);
   }
+
+  const whoami = npmWhoami();
+  if (whoami && typeof whoami === 'object' && whoami.error) {
+    printPublishFailureSummary(
+      'token_invalid',
+      'NPM_TOKEN 无法通过 whoami 校验，请检查 GitHub Secret 是否完整、未过期',
+    );
+    process.exit(1);
+  }
+  console.log(`[npm] whoami: ${whoami}`);
+  console.log(
+    `[npm] 提示: 发布 ${NPM_PACKAGE} 需要 token 对该作用域有 Read and write（Granular 令牌请在 Organizations 授权 agentai2026，或改用 Classic Automation）`,
+  );
 
   const pkgPath = join(OPENCLAW_DIR, 'package.json');
   if (!existsSync(pkgPath)) {
@@ -123,10 +153,31 @@ async function main() {
     process.exit(0);
   } catch (e) {
     log = `${e.stderr || ''}${e.stdout || ''}`;
-    console.log(log);
+    const tail = log.length > 4000 ? `…\n${log.slice(-4000)}` : log;
+    console.log('--- npm publish 输出（末尾）---');
+    console.log(tail);
+    console.log('--- 结束 ---');
   }
 
   const lower = log.toLowerCase();
+  if (/403|forbidden|not authorized|e403/.test(lower)) {
+    printPublishFailureSummary(
+      'permission_denied',
+      '当前 NPM_TOKEN 可能无权发布 @agentai2026/openclaw-zh：Granular 令牌需对 Organizations「agentai2026」选 Read and write，或登录 agentai2026 账号用 Classic Automation',
+    );
+    writePending({
+      status: 'pending',
+      reason: 'npm_permission_denied',
+      version: VER,
+      upstream_version,
+      upstream_sha,
+      last_attempt_at: new Date().toISOString(),
+      last_error: log.slice(0, 800),
+    });
+    setOutput('npm_published', 'false');
+    process.exit(1);
+  }
+
   if (/epublishconflict|already exists|409|conflict/.test(lower)) {
     const unpublishedAt = parseUnpublished(log) || parseUnpublished(String(npmView(NPM_PACKAGE)?.message || ''));
     if (unpublishedAt || /fully processed|save packument/.test(lower)) {
@@ -141,8 +192,9 @@ async function main() {
         retry_after: cd.retryAfter.toISOString(),
         last_attempt_at: new Date().toISOString(),
       });
-      console.log(
-        `::warning::npm 409：删包后 registry 仍在处理，约 ${cd.retryAfter.toISOString()} 后再试；下小时自动重试`,
+      printPublishFailureSummary(
+        'npm_409_after_unpublish',
+        `删包后 registry 冲突，约 ${cd.retryAfter.toISOString()} 后再试；或 Actions「指定版本汉化」勾选 force_revision 换新版本号`,
       );
       setOutput('npm_published', 'false');
       process.exit(0);
@@ -166,9 +218,9 @@ async function main() {
     upstream_sha,
     retry_after: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     last_attempt_at: new Date().toISOString(),
-    last_error: log.slice(0, 500),
+    last_error: log.slice(0, 800),
   });
-  console.log('::warning::npm 发布失败，已记录待重试，下小时自动再试');
+  printPublishFailureSummary('npm_publish_failed', '已写入 publish-pending.json，下小时自动重试');
   setOutput('npm_published', 'false');
   process.exit(0);
 }
