@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * CI：判断本次是否构建/发布（含上游变更与 npm 发布失败后的每小时重试）
  */

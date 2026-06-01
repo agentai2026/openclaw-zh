@@ -1,4 +1,4 @@
-﻿# 手动指定官方 openclaw 版本号进行汉化构建，可选发布 npm / Docker
+# 手动指定官方 openclaw 版本号进行汉化构建，可选发布 npm / Docker
 name: 指定版本汉化
 
 on:

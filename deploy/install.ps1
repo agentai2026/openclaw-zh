@@ -1,4 +1,4 @@
-﻿# OpenClaw 汉化版 - Windows 一键安装
+# OpenClaw 汉化版 - Windows 一键安装
 # 用法: irm https://raw.githubusercontent.com/agentai2026/openclaw-zh/main/deploy/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"

@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * 本地维护用：从 git 历史里的旧版 feature-panel.js 重新生成 overlay/panel/feature-panel.js
  * CI / apply 直接使用仓库里已提交的 overlay/panel/feature-panel.js，不跑本脚本。

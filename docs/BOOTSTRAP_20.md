@@ -1,4 +1,4 @@
-﻿# npm 首发 20 版（明天执行清单）
+# npm 首发 20 版（明天执行清单）
 
 目标：让 [@agentai2027/openclaw-zh](https://www.npmjs.com/package/@agentai2027/openclaw-zh) 上**至少有 20 个可见版本**，之后**不再**每小时自动跟官方全部更新。
 

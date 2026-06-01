@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * 删除 npm 上 @agentai2027/openclaw-zh 的全部已发布版本
  */

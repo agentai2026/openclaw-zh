@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * 生成汉化版发布说明（Git 提交说明 + CHANGELOG 条目）
  * 风格参考：feat: 适配上游 vX / chore: 发布 vX-zh

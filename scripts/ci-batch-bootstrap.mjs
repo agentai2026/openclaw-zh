@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * 在 CI 中按顺序触发「指定版本汉化」工作流，完成 npm 首发 20 版。
  * 需要 GH_TOKEN（workflow 内默认 github.token）与 gh CLI。

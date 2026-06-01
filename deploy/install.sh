@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # OpenClaw 汉化版 - Linux/macOS 一键安装
 # 用法: curl -fsSL https://raw.githubusercontent.com/agentai2026/openclaw-zh/main/deploy/install.sh | bash
 

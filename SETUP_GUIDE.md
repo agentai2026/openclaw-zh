@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="./docs/assets/openclaw-mascot.png" alt="OpenClaw 吉祥物" width="192" />
 
