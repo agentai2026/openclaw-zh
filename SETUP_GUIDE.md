@@ -83,9 +83,10 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 
 | 工作流 | 何时 | 作用 |
 |--------|------|------|
-| 定时发布 | 每小时 | 官方有更新 → 构建 → npm + Docker |
+| 定时发布 | 每小时 `:00` (UTC) | 官方有更新 → 构建 → npm + Docker |
+| 定时回填老版本 | 每小时 `:15` (UTC) | 从 official latest 往前，每小时补 1 个尚未发布的旧版 `-zh`（仅 npm，直至官方最早稳定版） |
+| 定时同步汉化 | 每小时 `:30` (UTC) | 仅 `translations/`、`overlay/` 等变更 → 同官方版本重发（加日期后缀） |
 | 指定版本汉化 | 手动 | 填版本号如 `2026.5.28` |
-| 删除失败记录 | 手动 | 清理失败 Actions |
 | 一键清空记录 | 手动 | 清空全部历史（要 PAT） |
 | 删除已发布包 | 手动 | ⚠️ 删 npm/Docker |
 

@@ -27,9 +27,11 @@ const KEEP_TOP = new Set([
 
 const KEEP_GITHUB = new Set([
   'workflows/nightly.yml',
-  'workflows/cleanup-failed.yml',
+  'workflows/overlay-republish.yml',
+  'workflows/backfill-legacy.yml',
   'workflows/cleanup-all.yml',
   'last-build.json',
+  'backfill-state.json',
   'dependabot.yml',
 ]);
 
@@ -47,7 +49,7 @@ function rmGitHubExtras() {
       }
       continue;
     }
-    if (name !== 'last-build.json') {
+    if (name !== 'last-build.json' && name !== 'backfill-state.json') {
       rmSync(p, { recursive: true, force: true });
     }
   }
@@ -85,9 +87,11 @@ const ADD_PATHS = [
   '.gitignore',
   'LICENSE',
   '.github/workflows/nightly.yml',
-  '.github/workflows/cleanup-failed.yml',
+  '.github/workflows/overlay-republish.yml',
+  '.github/workflows/backfill-legacy.yml',
   '.github/workflows/cleanup-all.yml',
   '.github/last-build.json',
+  '.github/backfill-state.json',
   '.github/dependabot.yml',
 ];
 

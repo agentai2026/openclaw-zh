@@ -1,0 +1,217 @@
+# 定时回填老版本：从官方 latest 的「上一个」起，每小时补发 1 个尚未发布的 -zh 包，直至 npm 最早稳定版
+name: 定时回填老版本
+
+on:
+  schedule:
+    - cron: '15 * * * *'
+  workflow_dispatch:
+    inputs:
+      force_build:
+        description: '强制构建（即使检测无缺口）'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: openclaw-zh-release
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  NPM_PACKAGE: '@agentai2027/openclaw-zh'
+  DOCKER_IMAGE: agentai2027/openclaw-zh
+  UPSTREAM_REPO: openclaw/openclaw
+  NODE_VERSION: '22'
+  NPM_COOLDOWN_MS: 86400000
+  BACKFILL_LEGACY: '1'
+
+permissions:
+  contents: write
+
+jobs:
+  check-backfill:
+    runs-on: ubuntu-latest
+    outputs:
+      need_build: ${{ steps.check.outputs.need_build }}
+      need_publish: ${{ steps.check.outputs.need_publish }}
+      wait_cooldown: ${{ steps.check.outputs.wait_cooldown }}
+      backfill_complete: ${{ steps.check.outputs.backfill_complete }}
+      upstream_version: ${{ steps.check.outputs.upstream_version }}
+      official_latest: ${{ steps.check.outputs.official_latest }}
+      official_earliest: ${{ steps.check.outputs.official_earliest }}
+      in_npm_cooldown: ${{ steps.check.outputs.in_npm_cooldown }}
+      npm_retry_after: ${{ steps.check.outputs.npm_retry_after }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 检查 UTF-8 BOM
+        run: node scripts/check-no-bom.mjs
+
+      - name: 检测待回填的官方旧版
+        id: check
+        env:
+          FORCE: ${{ github.event.inputs.force_build }}
+        run: node scripts/ci-check-backfill.mjs
+
+      - name: 回填已完成
+        if: steps.check.outputs.backfill_complete == 'true'
+        run: echo "::notice::老版本汉化回填已完成，本小时跳过构建"
+
+  wait-cooldown:
+    needs: check-backfill
+    if: needs.check-backfill.outputs.wait_cooldown == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PAT || github.token }}
+
+      - name: npm 冷却中
+        run: |
+          echo "::notice::npm 冷却中，预计 ${{ needs.check-backfill.outputs.npm_retry_after }} 后再试"
+          node -e "
+          const fs=require('fs');
+          const p='.github/publish-pending.json';
+          let j={};
+          if (fs.existsSync(p)) j=JSON.parse(fs.readFileSync(p,'utf8'));
+          Object.assign(j,{
+            status:'pending',
+            kind:'backfill',
+            reason:'npm_unpublished_cooldown',
+            upstream_version:'${{ needs.check-backfill.outputs.upstream_version }}',
+            retry_after:'${{ needs.check-backfill.outputs.npm_retry_after }}',
+            last_attempt_at:new Date().toISOString()
+          });
+          fs.writeFileSync(p, JSON.stringify(j,null,2)+'\n');
+          "
+      - name: 提交 pending 状态
+        run: node scripts/ci-commit-release-state.mjs
+
+  build:
+    needs: check-backfill
+    if: needs.check-backfill.outputs.need_build == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      upstream_sha: ${{ steps.clone.outputs.upstream_sha }}
+      built_version: ${{ steps.bump.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: 检出官方旧版
+        id: clone
+        env:
+          UPSTREAM_VERSION: ${{ needs.check-backfill.outputs.upstream_version }}
+          OPENCLAW_TARGET: openclaw
+        run: node scripts/ci-clone-upstream-version.mjs
+
+      - name: 应用汉化
+        id: bump
+        env:
+          OPENCLAW_TARGET: openclaw
+          OVERLAY_ROOT: ${{ github.workspace }}
+        run: |
+          node scripts/apply-package-zh.js
+          node scripts/apply-i18n.js
+          OPENCLAW_TARGET=openclaw UPSTREAM_VERSION=${{ needs.check-backfill.outputs.upstream_version }} \
+            node scripts/bump-openclaw-version.js
+          echo "version=$(node -p 'require(\"./openclaw/package.json\").version')" >> "$GITHUB_OUTPUT"
+
+      - name: 安装依赖并构建
+        working-directory: openclaw
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: |
+          set -e
+          corepack enable
+          pnpm install --no-frozen-lockfile --reporter=append-only
+          cd ..
+          OPENCLAW_TARGET=openclaw node scripts/regenerate-schema-artifacts.mjs
+          cd openclaw
+          pnpm canvas:a2ui:bundle || true
+          node scripts/tsdown-build.mjs
+          node scripts/runtime-postbuild.mjs
+          node scripts/build-stamp.mjs || true
+          pnpm build:plugin-sdk:dts || echo "⚠️ plugin-sdk dts 跳过"
+          node --import tsx scripts/write-plugin-sdk-entry-dts.ts || true
+          node --import tsx scripts/canvas-a2ui-copy.ts || true
+          node --import tsx scripts/copy-hook-metadata.ts || true
+          node --import tsx scripts/copy-export-html-templates.ts || true
+          node --import tsx scripts/write-build-info.ts || true
+          node --import tsx scripts/write-cli-startup-metadata.ts || true
+          node --import tsx scripts/write-cli-compat.ts || true
+          pnpm ui:build || true
+
+      - name: 准备发布产物
+        env:
+          OPENCLAW_TARGET: openclaw
+        run: |
+          node scripts/prepare-npm-publish.js
+          cp README.md openclaw/README.md
+          if [ -d openclaw/dist ]; then
+            find openclaw/dist -type f \( -name '*.js' -o -name '*.mjs' -o -name '*.cjs' \) -print0 | \
+              xargs -0 sed -i -E 's#(from |import |import\(|require\()"openclaw(["/])#\1"@agentai2027/openclaw-zh\2#g' || true
+          fi
+          echo "回填汉化版: $(node -p 'require(\"./openclaw/package.json\").version')"
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: openclaw-build-backfill-${{ needs.check-backfill.outputs.upstream_version }}
+          path: openclaw/
+          retention-days: 7
+
+  publish:
+    needs: [check-backfill, build]
+    if: needs.check-backfill.outputs.need_publish == 'true' && needs.check-backfill.outputs.need_build == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      npm_published: ${{ steps.npm.outputs.npm_published }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PAT || github.token }}
+
+      - uses: actions/download-artifact@v5
+        with:
+          name: openclaw-build-backfill-${{ needs.check-backfill.outputs.upstream_version }}
+          path: openclaw
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 检查 npm 登录身份
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "::error::未配置 NPM_TOKEN"
+            exit 1
+          fi
+          echo "[npm] whoami: $(npm whoami --registry=https://registry.npmjs.org/)"
+
+      - name: 发布 npm（仅回填，不推 Docker）
+        id: npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          OPENCLAW_DIR: ${{ github.workspace }}/openclaw
+          UPSTREAM_VERSION: ${{ needs.check-backfill.outputs.upstream_version }}
+          UPSTREAM_SHA: ${{ needs.build.outputs.upstream_sha }}
+          BACKFILL_LEGACY: '1'
+        run: node scripts/ci-npm-publish.mjs
+
+      - name: 更新回填进度
+        if: steps.npm.outputs.npm_published == 'true'
+        env:
+          UPSTREAM_VERSION: ${{ needs.check-backfill.outputs.upstream_version }}
+          BUILT_VERSION: ${{ needs.build.outputs.built_version }}
+        run: node scripts/ci-commit-backfill-state.mjs
