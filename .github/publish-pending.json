@@ -1,10 +1,10 @@
 {
   "status": "pending",
-  "reason": "npm_unpublished_cooldown",
+  "reason": "npm_409_after_unpublish",
   "version": "2026.5.28-zh",
   "upstream_version": "2026.5.28",
-  "upstream_sha": "61574eb",
+  "upstream_sha": "8e28c77",
   "unpublished_at": "2026-05-31T09:08:00.382Z",
   "retry_after": "2026-06-01T09:08:00.382Z",
-  "last_attempt_at": "2026-06-01T08:24:17.808Z"
+  "last_attempt_at": "2026-06-01T09:41:17.030Z"
 }
