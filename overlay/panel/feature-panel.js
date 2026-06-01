@@ -1,4 +1,4 @@
-﻿/* OpenClaw 汉化版 - 功能面板 (agentai2026/openclaw-zh) */
+/* OpenClaw 汉化版 - 功能面板 (agentai2026/openclaw-zh) */
 
 (function() {
   'use strict';
