@@ -1,3 +1,10 @@
 # 更新日志
 
+## 2026.5.28-zh（2026-06-01）
+
+**发布汉化版 2026.5.28-zh**
+
+- 对应官方 2026.5.28（fed7d1f）
+- npm 安装：@agentai2027/openclaw-zh@2026.5.28-zh
+
 > 汉化版每次 **npm 发布成功** 后会自动在本文件顶部追加一条；控制台「功能面板 → 更新日志」同步展示 [GitHub 提交记录](https://github.com/agentai2026/openclaw-zh/commits/main)。
