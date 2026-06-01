@@ -3,8 +3,8 @@
   "reason": "npm_409_after_unpublish",
   "version": "2026.5.28-zh",
   "upstream_version": "2026.5.28",
-  "upstream_sha": "8e28c77",
+  "upstream_sha": "055063f",
   "unpublished_at": "2026-05-31T09:08:00.382Z",
   "retry_after": "2026-06-01T09:08:00.382Z",
-  "last_attempt_at": "2026-06-01T09:41:17.030Z"
+  "last_attempt_at": "2026-06-01T10:22:59.275Z"
 }
