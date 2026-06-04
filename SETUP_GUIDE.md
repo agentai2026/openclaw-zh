@@ -60,7 +60,7 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 
 - 选 **90 days**（或 Custom 能选多远选多远）  
 - **不是包 3 个月就没了**，只是发布密码过期  
-- 日历每 **75 天** 提醒：换新 Token → 更新 Secret → 跑一次「定时发布」  
+- 日历每 **75 天** 提醒：换新 Token → 更新 Secret → 跑一次「定时检查最新版」  
 - **Bypass 2FA**：勾选（CI 必须）  
 - 包权限二选一（不要只选「所有包」却把组织设成禁止）：  
   - **Only select packages** → 选 `@agentai2027/openclaw-zh` → Read and write  
@@ -74,7 +74,7 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 
 ### 验证是否生效
 
-跑 **定时发布**，步骤 **检查 npm 登录身份** 应显示：  
+跑 **定时检查最新版**，步骤 **检查 npm 登录身份** 应显示：  
 `[npm] whoami: 你的用户名`
 
 ---
@@ -83,24 +83,11 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 
 | 工作流 | 何时 | 作用 |
 |--------|------|------|
-| 定时发布 | 每小时 `:00` (UTC) | 官方有更新 → 构建 → npm + Docker |
-| 定时回填老版本 | 每小时 `:15` (UTC) | 从 official latest 往前，每小时补 1 个尚未发布的旧版 `-zh`（仅 npm，直至官方最早稳定版） |
-| 定时同步汉化 | 每小时 `:30` (UTC) | 仅 `translations/`、`overlay/` 等变更 → 同官方版本重发（加日期后缀） |
-| 指定版本汉化 | 手动 | 填版本号如 `2026.5.28` |
-| 一键清空记录 | 手动 | 清空全部历史（要 PAT） |
-| 删除已发布包 | 手动 | ⚠️ 删 npm/Docker |
+| **定时检查最新版** | 每小时整点 (UTC) | 官方 `openclaw` 有新版本或 main 有新 commit → 汉化构建 → npm + Docker |
 
-### 指定版本汉化 · 参数
+可在 Actions 中手动运行，并勾选「强制构建」跳过变更检测。
 
-| 参数 | 说明 |
-|------|------|
-| `upstream_version` | 官方版本号，如 `2026.5.28` |
-| `force_revision` | 同版本只改翻译再发（加日期后缀） |
-| `release_note` | （可选）补充一句，写入 Git 提交与 `CHANGELOG.md` |
-| `publish_npm` | 是否发 npm |
-| `publish_docker` | npm 成功后才推 Docker |
-
-发布成功后会自动生成类似 `feat: 适配上游 v2026.5.28，发布汉化版 …` 的提交说明，并更新根目录 `CHANGELOG.md`；用户可在控制台功能面板的「更新日志」里看到。
+发布成功后会自动生成提交说明，并更新根目录 `CHANGELOG.md`。
 
 ### 怎样算发布成功？
 
@@ -125,9 +112,7 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 
 - 整包删除后约 **24 小时** 不能同名再发  
 - 用户会看到 `404 Unpublished`  
-- 没事别用 **删除已发布包**；确认框要输入 `DELETE`
-
-手动删：  
+手动删 npm 包：  
 https://www.npmjs.com/package/@agentai2027/openclaw-zh → Package settings → Delete package
 
 ---
@@ -143,7 +128,7 @@ https://www.npmjs.com/package/@agentai2027/openclaw-zh → Package settings → 
 
 **每 1～2 周**
 
-- [ ] Actions「定时发布」是否成功  
+- [ ] Actions「定时检查最新版」是否成功  
 - [ ] publish 有 `[npm] 发布成功`  
 - [ ] `npm view @agentai2027/openclaw-zh version` 正常  
 
@@ -153,7 +138,7 @@ https://www.npmjs.com/package/@agentai2027/openclaw-zh → Package settings → 
 
 **官方大版本后**
 
-- [ ] 跑「指定版本汉化」  
+- [ ] 等「定时检查最新版」跑完，或 Actions 手动触发  
 - [ ] 自己装一遍看控制台  
 - [ ] 补 `translations/` 漏翻  
 

@@ -131,13 +131,8 @@ async function main() {
   }
 
   const publish_pending = pending?.status === 'pending' ? 'true' : 'false';
-  // 仅重试「跟官方新包」自己的 pending，避免被回填/汉化同步的失败记录误触发
-  const pending_for_nightly =
-    publish_pending === 'true' &&
-    pending.kind !== 'backfill' &&
-    pending.kind !== 'overlay';
   const pending_ready =
-    pending_for_nightly &&
+    publish_pending === 'true' &&
     (!pending.retry_after || Date.now() >= new Date(pending.retry_after).getTime());
 
   const want_release = has_upstream_changes || pending_ready;

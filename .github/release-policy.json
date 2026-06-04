@@ -1,5 +1,4 @@
 {
   "follow_upstream": true,
-  "backfill_legacy": true,
-  "note": "follow_upstream 为 false 时，定时发布不再跟官方新版本；backfill_legacy 为 false 时，停止定时回填老版本。"
+  "note": "follow_upstream 为 false 时，定时检查将不再因官方新版本自动构建发布。"
 }

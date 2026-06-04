@@ -9,7 +9,6 @@ import {
   readPrevLastBuild,
   appendChangelog,
 } from './ci-release-notes.mjs';
-import { computeOverlayFingerprint } from './overlay-fingerprint.mjs';
 
 const upstream_version = process.env.UPSTREAM_VERSION || '';
 const upstream_sha = process.env.UPSTREAM_SHA || '';
@@ -32,8 +31,6 @@ async function main() {
 
     console.log('[release] 提交说明:\n' + notes.commitMessage);
 
-    const overlay_sha = await computeOverlayFingerprint();
-
     writeFileSync(
       '.github/last-build.json',
       `${JSON.stringify(
@@ -42,7 +39,6 @@ async function main() {
           upstream_sha,
           built_version,
           built_at: new Date().toISOString(),
-          overlay_sha,
           release_subject: notes.subject,
         },
         null,

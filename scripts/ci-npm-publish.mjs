@@ -50,20 +50,7 @@ function printPublishFailureSummary(reason, detail = '') {
 }
 
 function writePending(data) {
-  const payload = { ...data };
-  if (process.env.OVERLAY_REPUBLISH === '1') {
-    payload.kind = 'overlay';
-    if (!payload.reason || payload.reason === 'npm_publish_failed') {
-      payload.reason = 'overlay_republish';
-    }
-  }
-  if (process.env.BACKFILL_LEGACY === '1') {
-    payload.kind = 'backfill';
-    if (!payload.reason || payload.reason === 'npm_publish_failed') {
-      payload.reason = 'backfill_legacy';
-    }
-  }
-  writeFileSync(PENDING_PATH, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+  writeFileSync(PENDING_PATH, `${JSON.stringify(data, null, 2)}\n`, 'utf8');
   console.log('[npm] 已写入 publish-pending.json，下小时定时任务将重试');
 }
 
@@ -161,20 +148,16 @@ async function main() {
       env: { ...process.env },
     });
     console.log(`[npm] 发布成功 ${NPM_PACKAGE}@${VER} (tag: nightly)`);
-    if (process.env.BACKFILL_LEGACY === '1') {
-      console.log('[npm] 老版本回填：不修改 dist-tag latest（避免旧版覆盖默认安装版本）');
-    } else {
-      try {
-        execSync(`npm dist-tag add ${NPM_PACKAGE}@${VER} latest`, {
-          cwd: OPENCLAW_DIR,
-          encoding: 'utf8',
-          stdio: ['pipe', 'pipe', 'pipe'],
-          env: { ...process.env },
-        });
-        console.log(`[npm] dist-tag latest -> ${VER}`);
-      } catch (e) {
-        console.log(`::warning::更新 latest 标签失败: ${e.stderr || e.message}`);
-      }
+    try {
+      execSync(`npm dist-tag add ${NPM_PACKAGE}@${VER} latest`, {
+        cwd: OPENCLAW_DIR,
+        encoding: 'utf8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        env: { ...process.env },
+      });
+      console.log(`[npm] dist-tag latest -> ${VER}`);
+    } catch (e) {
+      console.log(`::warning::更新 latest 标签失败: ${e.stderr || e.message}`);
     }
     clearPending();
     setOutput('npm_published', 'true');
@@ -222,7 +205,7 @@ async function main() {
       });
       printPublishFailureSummary(
         'npm_409_after_unpublish',
-        `删包后 registry 冲突，约 ${cd.retryAfter.toISOString()} 后再试；或 Actions「指定版本汉化」勾选 force_revision 换新版本号`,
+        `删包后 registry 冲突，约 ${cd.retryAfter.toISOString()} 后再试`,
       );
       setOutput('npm_published', 'false');
       process.exit(0);

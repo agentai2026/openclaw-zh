@@ -1,5 +1,5 @@
-# 定时发布：检测上游 → 汉化构建 → npm + Docker（发布失败则每小时重试）
-name: 定时发布
+# 每小时检查官方 openclaw 最新版，有更新则汉化构建并发布 npm + Docker
+name: 定时检查最新版
 
 on:
   schedule:
