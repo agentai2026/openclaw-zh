@@ -104,6 +104,14 @@ jobs:
           APPLY_I18N: '1'
         run: bash scripts/ci-build-openclaw.sh
 
+      - name: 安装 Inno Setup（Windows .exe）
+        if: matrix.platform == 'win-x64'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+
       - name: 打包便携目录
         shell: bash
         env:
@@ -119,6 +127,7 @@ jobs:
           path: |
             release-staging/*.zip
             release-staging/*.tar.gz
+            release-staging/*.exe
             release-staging/*.meta.json
           retention-days: 5
           if-no-files-found: error
@@ -156,6 +165,14 @@ jobs:
           APPLY_I18N: '0'
         run: bash scripts/ci-build-openclaw.sh
 
+      - name: 安装 Inno Setup（Windows .exe）
+        if: matrix.platform == 'win-x64'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
+            choco install innosetup -y --no-progress
+          }
+
       - name: 打包便携目录
         shell: bash
         env:
@@ -171,6 +188,7 @@ jobs:
           path: |
             release-staging/*.zip
             release-staging/*.tar.gz
+            release-staging/*.exe
             release-staging/*.meta.json
           retention-days: 5
           if-no-files-found: error
@@ -191,7 +209,7 @@ jobs:
       - name: 整理产物
         run: |
           mkdir -p release-staging
-          find artifacts -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.meta.json' \) -exec cp {} release-staging/ \;
+          find artifacts -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.exe' -o -name '*.meta.json' \) -exec cp {} release-staging/ \;
           ls -la release-staging
 
       - name: 创建 GitHub Release

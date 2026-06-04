@@ -157,6 +157,24 @@ async function main() {
   writeFileSync(join(STAGING_ROOT, `${bundleName}.meta.json`), `${JSON.stringify(meta, null, 2)}\n`);
   console.log(`[package] ${archivePath} (${meta.size} bytes, sha256=${sha256.slice(0, 16)}…)`);
 
+  if (PLATFORM.startsWith('win') && process.env.BUILD_WIN_EXE !== '0') {
+    const { spawnSync } = await import('node:child_process');
+    const r = spawnSync(
+      process.execPath,
+      ['scripts/build-win-installer.mjs'],
+      {
+        stdio: 'inherit',
+        env: {
+          ...process.env,
+          BUNDLE_DIR: bundleDir,
+          STAGING_ROOT,
+          RELEASE_VARIANT: VARIANT,
+        },
+      },
+    );
+    if (r.status !== 0) process.exit(r.status || 1);
+  }
+
   if (process.env.GITHUB_OUTPUT) {
     const { appendFileSync } = await import('node:fs');
     appendFileSync(process.env.GITHUB_OUTPUT, `archive_path=${archivePath}\n`);

@@ -88,6 +88,8 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 
 **多平台 Release** 可在 Actions 里 **手动 Run workflow**（用于补打某一版的安装包）。
 
+Windows 汉化版/官方版会额外生成 **`.exe` 安装程序**（Inno Setup，与 zip 便携包一并上传）。
+
 发布成功后会更新 `CHANGELOG.md`；Release 页附带 `latest.json`（各包 SHA256）。
 
 ### 怎样算发布成功？

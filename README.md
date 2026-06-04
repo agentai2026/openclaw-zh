@@ -198,12 +198,13 @@ openclaw-zh/
 
 发布成功后到 [Releases](https://github.com/agentai2026/openclaw-zh/releases) 下载，例如：
 
-- `openclaw-zh-win-x64-2026.5.28-zh.zip` — 汉化版 Windows  
+- `openclaw-zh-win-x64-2026.5.28-zh.exe` — 汉化版 Windows **安装程序**（推荐）  
+- `openclaw-zh-win-x64-2026.5.28-zh.zip` — 汉化版 Windows 便携 zip  
 - `openclaw-zh-linux-x64-2026.5.28-zh.tar.gz` — 汉化版 Linux  
 - `openclaw-mac-arm64-2026.5.28.tar.gz` — 官方版 macOS（对照用）  
 - `latest.json` — 版本与 SHA256 索引  
 
-解压后运行 `bin/openclaw-gateway.cmd`（Windows）或 `bin/openclaw-gateway.sh`（macOS/Linux），**无需单独安装 Node**。
+Windows 可双击 **`.exe` 安装**；或解压 zip 后运行 `bin/openclaw-gateway.cmd`。macOS/Linux 解压 `.tar.gz` 后运行 `bin/openclaw-gateway.sh`。**无需单独安装 Node**。
 
 详细配置见 **[SETUP_GUIDE.md](./SETUP_GUIDE.md)**。
 

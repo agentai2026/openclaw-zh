@@ -25,7 +25,7 @@ function buildBody(zh, official) {
     '',
     `跟进官方 **openclaw ${UPSTREAM_VERSION}**${UPSTREAM_SHA ? `（\`${UPSTREAM_SHA}\`）` : ''}，由 [openclaw-zh](https://github.com/agentai2026/openclaw-zh) 自动构建。`,
     '',
-    '**零依赖便携包**：已内置 Node.js，解压即用，无需单独安装 Node/npm。',
+    '**零依赖**：已内置 Node.js。Windows 提供 **`.exe` 安装程序** 与 **`.zip` 便携包**；macOS/Linux 为 `.tar.gz`。',
     '',
     '### 汉化版（openclaw-zh-*）',
     '',
@@ -45,7 +45,7 @@ function buildBody(zh, official) {
     '',
     '### 使用',
     '',
-    '- Windows：解压后运行 `bin\\openclaw-gateway.cmd`，或 `bin\\openclaw-gateway.ps1 gateway run`',
+    '- Windows：运行 `.exe` 安装程序，或解压 `.zip` 后执行 `bin\\openclaw-gateway.cmd`',
     '- macOS / Linux：`chmod +x bin/openclaw-gateway.sh && ./bin/openclaw-gateway.sh gateway run`',
     '- npm：`npm i -g @agentai2027/openclaw-zh@' + BUILT_VERSION,
     '',
@@ -86,6 +86,11 @@ function main() {
     join(STAGING, 'latest.json'),
     ...metas.map((m) => join(STAGING, m.file)),
   ].filter(existsSync);
+
+  for (const f of readdirSync(STAGING).filter((n) => n.endsWith('.exe'))) {
+    const p = join(STAGING, f);
+    if (!files.includes(p)) files.push(p);
+  }
 
   try {
     execSync(`gh release view "${tag}"`, { stdio: 'pipe' });
