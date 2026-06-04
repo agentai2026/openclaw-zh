@@ -27,6 +27,29 @@ function findIscc() {
   return null;
 }
 
+/** choco 安装的 Inno Setup 常缺中文语言包 */
+function ensureChineseIsl(isccPath) {
+  const langDir = join(dirname(isccPath), 'Languages');
+  const target = join(langDir, 'ChineseSimplified.isl');
+  if (existsSync(target)) return target;
+
+  mkdirSync(langDir, { recursive: true });
+  const urls = [
+    'https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl',
+    'https://raw.githubusercontent.com/jrsoftware/issrc/master/Files/Languages/Unofficial/ChineseSimplified.isl',
+  ];
+  for (const url of urls) {
+    try {
+      console.log(`[win-installer] 下载中文语言包 ${url}`);
+      execSync(`curl -fsSL -o "${target}" "${url}"`, { stdio: 'inherit' });
+      if (existsSync(target) && readFileSync(target, 'utf8').includes('Chinese')) return target;
+    } catch {
+      /* try next */
+    }
+  }
+  return null;
+}
+
 function sha256File(path) {
   const h = createHash('sha256');
   h.update(readFileSync(path));
@@ -65,6 +88,27 @@ function main() {
   const outputBase = bundleName;
   const exeName = `${outputBase}.exe`;
 
+  const chineseIsl = ensureChineseIsl(iscc);
+  const languagesSection = chineseIsl
+    ? `[Languages]
+Name: "chinesesimplified"; MessagesFile: "${escIss(chineseIsl)}"
+Name: "english"; MessagesFile: "compiler:Default.isl"
+`
+    : `[Languages]
+Name: "english"; MessagesFile: "compiler:Default.isl"
+`;
+  if (!chineseIsl) {
+    console.log('[win-installer] 未找到中文语言包，安装向导使用英文（应用仍为汉化版）');
+  }
+
+  const tasksSection = chineseIsl
+    ? `[Tasks]
+Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: "附加图标:"; Flags: unchecked
+`
+    : `[Tasks]
+Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription: "Additional icons:"; Flags: unchecked
+`;
+
   const issPath = join(STAGING_ROOT, `${bundleName}.iss`);
   const iss = `\uFEFF; 由 openclaw-zh CI 自动生成
 #define BundleDir "${escIss(resolve(BUNDLE_DIR))}"
@@ -90,23 +134,18 @@ ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 
-[Languages]
-Name: "chinesesimplified"; MessagesFile: "compiler:Languages\\ChineseSimplified.isl"
-Name: "english"; MessagesFile: "compiler:Default.isl"
-
-[Tasks]
-Name: "desktopicon"; Description: "创建桌面快捷方式"; GroupDescription: "附加图标:"; Flags: unchecked
-
+${languagesSection}
+${tasksSection}
 [Files]
 Source: "{#BundleDir}\\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\\OpenClaw Gateway"; Filename: "{app}\\bin\\openclaw-gateway.cmd"; WorkingDir: "{app}"
-Name: "{group}\\卸载 ${appName}"; Filename: "{uninstallexe}"
+Name: "{group}\\Uninstall ${appName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\\OpenClaw Gateway"; Filename: "{app}\\bin\\openclaw-gateway.cmd"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\\README.txt"; Description: "查看说明"; Flags: postinstall shellexec skipifsilent unchecked
+Filename: "{app}\\README.txt"; Description: "${chineseIsl ? '查看说明' : 'View readme'}"; Flags: postinstall shellexec skipifsilent unchecked
 `;
 
   mkdirSync(STAGING_ROOT, { recursive: true });

@@ -127,6 +127,14 @@ jobs:
           if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
             choco install innosetup -y --no-progress
           }
+          $langDir = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages"
+          $isl = Join-Path $langDir "ChineseSimplified.isl"
+          if (-not (Test-Path $isl)) {
+            New-Item -ItemType Directory -Force -Path $langDir | Out-Null
+            $url = "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
+            Invoke-WebRequest -Uri $url -OutFile $isl -UseBasicParsing
+            Write-Host "已下载 ChineseSimplified.isl"
+          }
 
       - name: 打包便携目录
         shell: bash
@@ -187,6 +195,14 @@ jobs:
         run: |
           if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) {
             choco install innosetup -y --no-progress
+          }
+          $langDir = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages"
+          $isl = Join-Path $langDir "ChineseSimplified.isl"
+          if (-not (Test-Path $isl)) {
+            New-Item -ItemType Directory -Force -Path $langDir | Out-Null
+            $url = "https://raw.githubusercontent.com/jrsoftware/issrc/main/Files/Languages/Unofficial/ChineseSimplified.isl"
+            Invoke-WebRequest -Uri $url -OutFile $isl -UseBasicParsing
+            Write-Host "已下载 ChineseSimplified.isl"
           }
 
       - name: 打包便携目录
