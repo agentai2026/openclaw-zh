@@ -11,9 +11,14 @@ on:
         description: '（可选）覆盖官方版本号，默认读 last-build.json'
         required: false
         type: string
+      force_package:
+        description: '强制打包（即使 GitHub Release 已存在也重新上传）'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
-  group: openclaw-zh-release-assets-${{ github.event.workflow_run.head_branch }}
+  group: openclaw-zh-release-assets-${{ github.event.workflow_run.head_branch || github.ref }}
   cancel-in-progress: false
 
 env:
@@ -28,9 +33,11 @@ permissions:
 jobs:
   gate:
     runs-on: ubuntu-latest
+    # 手动 Run workflow 无 workflow_run 上下文，必须单独放行
     if: >
-      github.event.workflow_run.conclusion == 'success' &&
-      github.event.workflow_run.event != 'pull_request'
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event != 'pull_request')
     outputs:
       should_package: ${{ steps.meta.outputs.should_package }}
       upstream_version: ${{ steps.meta.outputs.upstream_version }}
@@ -49,11 +56,20 @@ jobs:
           UV="${INPUT_UPSTREAM:-$(node -p "require('./.github/last-build.json').upstream_version")}"
           US=$(node -p "require('./.github/last-build.json').upstream_sha || ''")
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "should_package=true" >> "$GITHUB_OUTPUT"
+            FORCE="${{ github.event.inputs.force_package }}"
+            if [ "$FORCE" = "true" ]; then
+              echo "should_package=true" >> "$GITHUB_OUTPUT"
+              echo "[gate] 手动强制打包: v${V}"
+            elif gh release view "v${V}" >/dev/null 2>&1; then
+              echo "should_package=false" >> "$GITHUB_OUTPUT"
+              echo "[gate] Release v${V} 已存在；若要重打请勾选 force_package"
+            else
+              echo "should_package=true" >> "$GITHUB_OUTPUT"
+              echo "[gate] 手动触发多平台 Release: v${V}"
+            fi
             echo "built_version=$V" >> "$GITHUB_OUTPUT"
             echo "upstream_version=$UV" >> "$GITHUB_OUTPUT"
             echo "upstream_sha=$US" >> "$GITHUB_OUTPUT"
-            echo "[gate] 手动触发多平台 Release: v${V}"
             exit 0
           fi
           echo "built_version=$V" >> "$GITHUB_OUTPUT"
