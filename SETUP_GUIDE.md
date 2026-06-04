@@ -83,11 +83,12 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 
 | 工作流 | 何时 | 作用 |
 |--------|------|------|
-| **定时检查最新版** | 每小时整点 (UTC) | 官方 `openclaw` 有新版本或 main 有新 commit → 汉化构建 → npm + Docker |
+| **定时检查最新版** | 每小时整点 (UTC) | 官方有新版本 → 汉化 → npm + Docker |
+| **多平台 Release** | 上一流程成功且该版本尚未有 Release 时 | 5 平台汉化便携包 + 3 平台官方对照包 → [GitHub Releases](https://github.com/agentai2026/openclaw-zh/releases) |
 
-可在 Actions 中手动运行，并勾选「强制构建」跳过变更检测。
+**多平台 Release** 可在 Actions 里 **手动 Run workflow**（用于补打某一版的安装包）。
 
-发布成功后会自动生成提交说明，并更新根目录 `CHANGELOG.md`。
+发布成功后会更新 `CHANGELOG.md`；Release 页附带 `latest.json`（各包 SHA256）。
 
 ### 怎样算发布成功？
 

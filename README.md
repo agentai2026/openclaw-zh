@@ -47,7 +47,7 @@
 |---|------|
 | 🇨🇳 **全中文界面** | 控制台、设置、向导、CLI 等大量文案已汉化 |
 | 📦 **npm 一键安装** | 包名 `@agentai2027/openclaw-zh`，和装普通软件一样 |
-| 🔄 **自动跟官方** | 定时检测官方新版本，有更新就自动打包（见 Actions） |
+| 🔄 **自动跟官方** | 定时检测官方新版本，自动发 npm / Docker / **GitHub 多平台安装包** |
 | 🧩 **功能面板** | 控制台顶部齿轮：帮助、快捷指令、插件、更新日志（源码另见 [OpenClaw-Panel](https://github.com/agentai2026/OpenClaw-Panel)） |
 | 🐳 **Docker 镜像** | `agentai2027/openclaw-zh`，不想装 Node 也能跑 |
 | 🛠️ **可自己改翻译** | 改 `translations/` 里的 JSON，再执行脚本刷进源码 |
@@ -189,13 +189,23 @@ openclaw-zh/
 
 ## 🤖 自动发布（维护者简略）
 
-仅 **一个** GitHub Actions 工作流：**定时检查最新版**（每小时 UTC 整点，北京时间约每小时整点）。
+| 工作流 | 作用 |
+|--------|------|
+| **定时检查最新版** | 每小时检查官方最新版 → 汉化 → 发 **npm + Docker** |
+| **多平台 Release** | 上一流程发布成功后自动打 **GitHub Releases** 便携包（Win / Linux / macOS，含汉化版 + 官方版） |
 
-- 检测官方 `openclaw` 最新版本 / main 是否有变  
-- 有更新则汉化构建并发布 **npm + Docker**  
-- 可在 Actions 里手动 Run workflow，可勾选「强制构建」  
+### GitHub Releases 便携包（零依赖）
 
-详细配置（NPM_TOKEN、密钥、报错处理）见 **[SETUP_GUIDE.md](./SETUP_GUIDE.md)**。
+发布成功后到 [Releases](https://github.com/agentai2026/openclaw-zh/releases) 下载，例如：
+
+- `openclaw-zh-win-x64-2026.5.28-zh.zip` — 汉化版 Windows  
+- `openclaw-zh-linux-x64-2026.5.28-zh.tar.gz` — 汉化版 Linux  
+- `openclaw-mac-arm64-2026.5.28.tar.gz` — 官方版 macOS（对照用）  
+- `latest.json` — 版本与 SHA256 索引  
+
+解压后运行 `bin/openclaw-gateway.cmd`（Windows）或 `bin/openclaw-gateway.sh`（macOS/Linux），**无需单独安装 Node**。
+
+详细配置见 **[SETUP_GUIDE.md](./SETUP_GUIDE.md)**。
 
 ### 每次更新写清楚「改了什么」
 

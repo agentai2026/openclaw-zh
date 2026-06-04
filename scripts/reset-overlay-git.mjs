@@ -27,6 +27,7 @@ const KEEP_TOP = new Set([
 
 const KEEP_GITHUB = new Set([
   'workflows/nightly.yml',
+  'workflows/release-assets.yml',
   'last-build.json',
   'dependabot.yml',
 ]);
@@ -83,6 +84,7 @@ const ADD_PATHS = [
   '.gitignore',
   'LICENSE',
   '.github/workflows/nightly.yml',
+  '.github/workflows/release-assets.yml',
   '.github/last-build.json',
   '.github/dependabot.yml',
 ];

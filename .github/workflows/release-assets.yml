@@ -1,0 +1,204 @@
+# 在「定时检查最新版」npm 发布成功后，构建多平台便携包并创建 GitHub Release
+name: 多平台 Release
+
+on:
+  workflow_run:
+    workflows: ['定时检查最新版']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      upstream_version:
+        description: '（可选）覆盖官方版本号，默认读 last-build.json'
+        required: false
+        type: string
+
+concurrency:
+  group: openclaw-zh-release-assets-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  UPSTREAM_REPO: openclaw/openclaw
+  NODE_VERSION: '22'
+  NODE_MAJOR: '22.16.0'
+
+permissions:
+  contents: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event != 'pull_request'
+    outputs:
+      should_package: ${{ steps.meta.outputs.should_package }}
+      upstream_version: ${{ steps.meta.outputs.upstream_version }}
+      upstream_sha: ${{ steps.meta.outputs.upstream_sha }}
+      built_version: ${{ steps.meta.outputs.built_version }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: 判断是否需要打 Release 包
+        id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INPUT_UPSTREAM: ${{ github.event.inputs.upstream_version }}
+        run: |
+          V=$(node -p "require('./.github/last-build.json').built_version")
+          UV="${INPUT_UPSTREAM:-$(node -p "require('./.github/last-build.json').upstream_version")}"
+          US=$(node -p "require('./.github/last-build.json').upstream_sha || ''")
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "should_package=true" >> "$GITHUB_OUTPUT"
+            echo "built_version=$V" >> "$GITHUB_OUTPUT"
+            echo "upstream_version=$UV" >> "$GITHUB_OUTPUT"
+            echo "upstream_sha=$US" >> "$GITHUB_OUTPUT"
+            echo "[gate] 手动触发多平台 Release: v${V}"
+            exit 0
+          fi
+          echo "built_version=$V" >> "$GITHUB_OUTPUT"
+          echo "upstream_version=$UV" >> "$GITHUB_OUTPUT"
+          echo "upstream_sha=$US" >> "$GITHUB_OUTPUT"
+          if gh release view "v${V}" >/dev/null 2>&1; then
+            echo "should_package=false" >> "$GITHUB_OUTPUT"
+            echo "[gate] Release v${V} 已存在，跳过"
+          else
+            echo "should_package=true" >> "$GITHUB_OUTPUT"
+            echo "[gate] 将发布多平台 Release: v${V} (官方 ${UV})"
+          fi
+
+  package-zh:
+    needs: gate
+    if: needs.gate.outputs.should_package == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: linux-x64
+          - runner: ubuntu-24.04-arm
+            platform: linux-arm64
+          - runner: windows-latest
+            platform: win-x64
+          - runner: macos-latest
+            platform: macos-arm64
+          - runner: macos-13
+            platform: macos-x64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: 构建汉化版
+        shell: bash
+        env:
+          UPSTREAM_VERSION: ${{ needs.gate.outputs.upstream_version }}
+          APPLY_I18N: '1'
+        run: bash scripts/ci-build-openclaw.sh
+
+      - name: 打包便携目录
+        shell: bash
+        env:
+          RELEASE_PLATFORM: ${{ matrix.platform }}
+          RELEASE_VARIANT: zh
+          OPENCLAW_DIR: ${{ github.workspace }}/openclaw
+          UPSTREAM_VERSION: ${{ needs.gate.outputs.upstream_version }}
+        run: node scripts/package-portable.mjs
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: release-zh-${{ matrix.platform }}
+          path: |
+            release-staging/*.zip
+            release-staging/*.tar.gz
+            release-staging/*.meta.json
+          retention-days: 5
+          if-no-files-found: error
+
+  package-official:
+    needs: gate
+    if: needs.gate.outputs.should_package == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: linux-x64
+          - runner: windows-latest
+            platform: win-x64
+          - runner: macos-latest
+            platform: macos-arm64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: 构建官方版（无汉化）
+        shell: bash
+        env:
+          UPSTREAM_VERSION: ${{ needs.gate.outputs.upstream_version }}
+          APPLY_I18N: '0'
+        run: bash scripts/ci-build-openclaw.sh
+
+      - name: 打包便携目录
+        shell: bash
+        env:
+          RELEASE_PLATFORM: ${{ matrix.platform }}
+          RELEASE_VARIANT: official
+          OPENCLAW_DIR: ${{ github.workspace }}/openclaw
+          UPSTREAM_VERSION: ${{ needs.gate.outputs.upstream_version }}
+        run: node scripts/package-portable.mjs
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: release-official-${{ matrix.platform }}
+          path: |
+            release-staging/*.zip
+            release-staging/*.tar.gz
+            release-staging/*.meta.json
+          retention-days: 5
+          if-no-files-found: error
+
+  github-release:
+    needs: [gate, package-zh, package-official]
+    if: needs.gate.outputs.should_package == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+          pattern: release-*
+          merge-multiple: true
+
+      - name: 整理产物
+        run: |
+          mkdir -p release-staging
+          find artifacts -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.meta.json' \) -exec cp {} release-staging/ \;
+          ls -la release-staging
+
+      - name: 创建 GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_VERSION: ${{ needs.gate.outputs.upstream_version }}
+          UPSTREAM_SHA: ${{ needs.gate.outputs.upstream_sha }}
+          BUILT_VERSION: ${{ needs.gate.outputs.built_version }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/ci-github-release.mjs
