@@ -62,17 +62,26 @@ async function downloadNode(distKey) {
   if (existsSync(extractDir)) rmSync(extractDir, { recursive: true, force: true });
   mkdirSync(extractDir, { recursive: true });
   if (spec.ext === 'zip') {
+    // Windows 上勿用 Expand-Archive：慢、无输出，路径含反斜杠时易出问题
     if (process.platform === 'win32') {
-      run(
-        `powershell -NoProfile -Command "Expand-Archive -LiteralPath '${archive.replace(/'/g, "''")}' -DestinationPath '${cache.replace(/'/g, "''")}' -Force"`,
-      );
+      console.log('[package] 解压 Node zip（tar.exe）…');
+      run(`tar.exe -xf "${archive}" -C "${cache}"`);
     } else {
       run(`unzip -q "${archive}" -d "${cache}"`);
     }
   } else {
     run(`tar -xJf "${archive}" -C "${cache}"`);
   }
-  return join(cache, folder);
+  const nodeRoot = join(cache, folder);
+  const nodeBin =
+    process.platform === 'win32'
+      ? join(nodeRoot, 'node.exe')
+      : join(nodeRoot, 'bin', 'node');
+  if (!existsSync(nodeBin)) {
+    throw new Error(`Node 解压后缺少运行时: ${nodeBin}`);
+  }
+  console.log(`[package] Node 就绪: ${nodeRoot}`);
+  return nodeRoot;
 }
 
 function pruneProd(openclawDir) {
