@@ -84,7 +84,7 @@ https://github.com/agentai2026/openclaw-zh/settings/secrets/actions
 | 工作流 | 何时 | 作用 |
 |--------|------|------|
 | **定时检查最新版** | 每小时整点 (UTC) | 官方有新版本 → 汉化 → npm + Docker |
-| **多平台 Release** | 上一流程成功且该版本尚未有 Release 时 | 5 平台汉化便携包 + 3 平台官方对照包 → [GitHub Releases](https://github.com/agentai2026/openclaw-zh/releases) |
+| **多平台 Release** | 每天 1 次 UTC 18:00（北京次日 02:00）；该版本尚无 Release 时打包 | 5 平台汉化 + 3 平台官方 → [GitHub Releases](https://github.com/agentai2026/openclaw-zh/releases) |
 
 **多平台 Release** 可在 Actions 里 **手动 Run workflow**（用于补打某一版的安装包）。
 

@@ -192,7 +192,7 @@ openclaw-zh/
 | 工作流 | 作用 |
 |--------|------|
 | **定时检查最新版** | 每小时检查官方最新版 → 汉化 → 发 **npm + Docker** |
-| **多平台 Release** | 上一流程发布成功后自动打 **GitHub Releases** 便携包（Win / Linux / macOS，含汉化版 + 官方版） |
+| **多平台 Release** | 每天 1 次（UTC 18:00，北京次日 02:00）打 **GitHub Releases** 便携包（Win / Linux / macOS） |
 
 ### GitHub Releases 便携包（零依赖）
 

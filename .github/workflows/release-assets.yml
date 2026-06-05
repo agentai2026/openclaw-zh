@@ -1,10 +1,9 @@
-# 在「定时检查最新版」npm 发布成功后，构建多平台便携包并创建 GitHub Release
+# 每天一次：为 last-build 对应版本打多平台便携包并创建 GitHub Release（无 job 超时限制，最长 6h）
 name: 多平台 Release
 
 on:
-  workflow_run:
-    workflows: ['定时检查最新版']
-    types: [completed]
+  schedule:
+    - cron: '0 18 * * *'
   workflow_dispatch:
     inputs:
       upstream_version:
@@ -18,7 +17,7 @@ on:
         type: boolean
 
 concurrency:
-  group: openclaw-zh-release-assets-${{ github.event.workflow_run.head_branch || github.ref }}
+  group: openclaw-zh-release-assets
   cancel-in-progress: false
 
 env:
@@ -33,11 +32,6 @@ permissions:
 jobs:
   gate:
     runs-on: ubuntu-latest
-    # 手动 Run workflow 无 workflow_run 上下文，必须单独放行
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.event != 'pull_request')
     outputs:
       should_package: ${{ steps.meta.outputs.should_package }}
       upstream_version: ${{ steps.meta.outputs.upstream_version }}
@@ -101,7 +95,6 @@ jobs:
           - runner: macos-13
             platform: macos-x64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
 
@@ -170,7 +163,6 @@ jobs:
           - runner: macos-latest
             platform: macos-arm64
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
 
