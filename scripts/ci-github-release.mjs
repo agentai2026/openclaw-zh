@@ -45,7 +45,7 @@ function buildBody(zh, official) {
     '',
     '### 使用',
     '',
-    '- Windows：运行 `.exe` 安装程序，或解压 `.zip` 后执行 `bin\\openclaw-gateway.cmd`',
+    '- Windows：运行 `.exe` 安装程序（便携 `.zip` 默认不生成以加快 CI）',
     '- macOS / Linux：`chmod +x bin/openclaw-gateway.sh && ./bin/openclaw-gateway.sh gateway run`',
     '- npm：`npm i -g @agentai2027/openclaw-zh@' + BUILT_VERSION,
     '',

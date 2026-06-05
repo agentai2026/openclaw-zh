@@ -109,6 +109,9 @@ async function main() {
       const rel = src.replace(/\\/g, '/');
       if (rel.includes('/.git/')) return false;
       if (rel.includes('/node_modules/.cache')) return false;
+      if (/\/\.(github|vscode)\//.test(rel)) return false;
+      if (/\/test\//.test(rel) || /\/tests\//.test(rel)) return false;
+      if (rel.endsWith('.map')) return false;
       return true;
     },
   });
@@ -136,46 +139,52 @@ async function main() {
   };
   writeFileSync(join(bundleDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
 
-  const outExt = PLATFORM.startsWith('win') ? 'zip' : 'tar.gz';
-  const archivePath = join(STAGING_ROOT, `${bundleName}.${outExt}`);
-  if (existsSync(archivePath)) rmSync(archivePath, { force: true });
+  // Windows：先打 .exe（Inno Setup），默认跳过极慢的 Compress-Archive zip
+  const buildWinExe = PLATFORM.startsWith('win') && process.env.BUILD_WIN_EXE !== '0';
+  const buildWinZip = PLATFORM.startsWith('win') && process.env.BUILD_WIN_ZIP === '1';
 
-  if (outExt === 'zip') {
-    if (process.platform === 'win32') {
-      run(
-        `powershell -NoProfile -Command "Compress-Archive -Path '${bundleDir}\\*' -DestinationPath '${archivePath}' -Force"`,
-      );
-    } else {
-      run(`cd "${bundleDir}" && zip -rq "${archivePath}" .`);
-    }
-  } else {
-    run(`tar -czf "${archivePath}" -C "${STAGING_ROOT}" "${bundleName}"`);
-  }
-
-  const sha256 = sha256File(archivePath);
-  const meta = { ...manifest, file: `${bundleName}.${outExt}`, sha256, size: readFileSync(archivePath).length };
-  writeFileSync(join(STAGING_ROOT, `${bundleName}.meta.json`), `${JSON.stringify(meta, null, 2)}\n`);
-  console.log(`[package] ${archivePath} (${meta.size} bytes, sha256=${sha256.slice(0, 16)}…)`);
-
-  if (PLATFORM.startsWith('win') && process.env.BUILD_WIN_EXE !== '0') {
+  if (buildWinExe) {
+    console.log('[package] Windows：开始编译 .exe 安装包…');
     const { spawnSync } = await import('node:child_process');
-    const r = spawnSync(
-      process.execPath,
-      ['scripts/build-win-installer.mjs'],
-      {
-        stdio: 'inherit',
-        env: {
-          ...process.env,
-          BUNDLE_DIR: bundleDir,
-          STAGING_ROOT,
-          RELEASE_VARIANT: VARIANT,
-        },
-      },
-    );
+    const r = spawnSync(process.execPath, ['scripts/build-win-installer.mjs'], {
+      stdio: 'inherit',
+      env: { ...process.env, BUNDLE_DIR: bundleDir, STAGING_ROOT, RELEASE_VARIANT: VARIANT },
+    });
     if (r.status !== 0) process.exit(r.status || 1);
+    console.log('[package] Windows：.exe 完成');
   }
 
-  if (process.env.GITHUB_OUTPUT) {
+  let archivePath = '';
+  let sha256 = '';
+
+  if (!PLATFORM.startsWith('win') || buildWinZip) {
+    const outExt = PLATFORM.startsWith('win') ? 'zip' : 'tar.gz';
+    archivePath = join(STAGING_ROOT, `${bundleName}.${outExt}`);
+    if (existsSync(archivePath)) rmSync(archivePath, { force: true });
+
+    console.log(`[package] 开始压缩 ${outExt}（目录较大，请耐心等待）…`);
+    if (outExt === 'zip') {
+      // 勿用 PowerShell Compress-Archive：数 GB 时几乎无输出且极慢
+      run(`tar.exe -a -cf "${archivePath}" -C "${bundleDir}" .`);
+    } else {
+      run(`tar -czf "${archivePath}" -C "${STAGING_ROOT}" "${bundleName}"`);
+    }
+
+    sha256 = sha256File(archivePath);
+    const meta = {
+      ...manifest,
+      file: `${bundleName}.${outExt}`,
+      kind: 'archive',
+      sha256,
+      size: readFileSync(archivePath).length,
+    };
+    writeFileSync(join(STAGING_ROOT, `${bundleName}.meta.json`), `${JSON.stringify(meta, null, 2)}\n`);
+    console.log(`[package] ${archivePath} (${meta.size} bytes, sha256=${sha256.slice(0, 16)}…)`);
+  } else if (buildWinExe) {
+    console.log('[package] Windows：已跳过 zip（仅发布 .exe；需要 zip 请设 BUILD_WIN_ZIP=1）');
+  }
+
+  if (process.env.GITHUB_OUTPUT && archivePath) {
     const { appendFileSync } = await import('node:fs');
     appendFileSync(process.env.GITHUB_OUTPUT, `archive_path=${archivePath}\n`);
     appendFileSync(process.env.GITHUB_OUTPUT, `bundle_name=${bundleName}\n`);

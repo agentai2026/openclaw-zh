@@ -141,11 +141,7 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: release-zh-${{ matrix.platform }}
-          path: |
-            release-staging/*.zip
-            release-staging/*.tar.gz
-            release-staging/*.exe
-            release-staging/*.meta.json
+          path: release-staging/
           retention-days: 5
           if-no-files-found: error
 
@@ -209,11 +205,7 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: release-official-${{ matrix.platform }}
-          path: |
-            release-staging/*.zip
-            release-staging/*.tar.gz
-            release-staging/*.exe
-            release-staging/*.meta.json
+          path: release-staging/
           retention-days: 5
           if-no-files-found: error
 
