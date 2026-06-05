@@ -62,10 +62,13 @@ async function downloadNode(distKey) {
   if (existsSync(extractDir)) rmSync(extractDir, { recursive: true, force: true });
   mkdirSync(extractDir, { recursive: true });
   if (spec.ext === 'zip') {
-    // Windows 上勿用 Expand-Archive：慢、无输出，路径含反斜杠时易出问题
     if (process.platform === 'win32') {
-      console.log('[package] 解压 Node zip（tar.exe）…');
-      run(`tar.exe -xf "${archive}" -C "${cache}"`);
+      // Node 官方 zip 约 30MB；在 cache 目录内用相对路径，避免 tar 把 D: 当成远程主机
+      console.log('[package] 解压 Node zip（Expand-Archive）…');
+      run(
+        `powershell -NoProfile -Command "Expand-Archive -LiteralPath '${file}' -DestinationPath '.' -Force"`,
+        { cwd: cache },
+      );
     } else {
       run(`unzip -q "${archive}" -d "${cache}"`);
     }
@@ -173,8 +176,9 @@ async function main() {
 
     console.log(`[package] 开始压缩 ${outExt}（目录较大，请耐心等待）…`);
     if (outExt === 'zip') {
-      // 勿用 PowerShell Compress-Archive：数 GB 时几乎无输出且极慢
-      run(`tar.exe -a -cf "${archivePath}" -C "${bundleDir}" .`);
+      // 在 bundle 目录内用相对路径打 zip，避免 GNU tar 解析 D:\ 失败
+      const zipName = `${bundleName}.zip`;
+      run(`tar.exe -a -cf "../${zipName}" .`, { cwd: bundleDir });
     } else {
       run(`tar -czf "${archivePath}" -C "${STAGING_ROOT}" "${bundleName}"`);
     }
