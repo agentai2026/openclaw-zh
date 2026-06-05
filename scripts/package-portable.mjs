@@ -33,6 +33,10 @@ const NODE_DIST = {
   'macos-arm64': { os: 'darwin', arch: 'arm64', ext: 'tar.xz', nodeDir: 'node-v{ver}-darwin-arm64' },
 };
 
+function logStep(msg) {
+  console.log(`[package] ${msg}`);
+}
+
 function run(cmd, opts = {}) {
   console.log(`> ${cmd}`);
   execSync(cmd, { stdio: 'inherit', ...opts });
@@ -55,12 +59,16 @@ async function downloadNode(distKey) {
   mkdirSync(cache, { recursive: true });
   const archive = join(cache, file);
   if (!existsSync(archive)) {
-    console.log(`[package] 下载 Node ${url}`);
+    logStep(`下载 Node：${url}`);
     run(`curl -fsSL -o "${archive}" "${url}"`);
+    logStep('Node 下载完成');
+  } else {
+    logStep(`使用缓存 Node：${archive}`);
   }
   const extractDir = join(cache, folder);
   if (existsSync(extractDir)) rmSync(extractDir, { recursive: true, force: true });
   mkdirSync(extractDir, { recursive: true });
+  logStep(`解压 Node（${file}）…`);
   if (spec.ext === 'zip') {
     if (process.platform === 'win32') {
       // Node 官方 zip 约 30MB；在 cache 目录内用相对路径，避免 tar 把 D: 当成远程主机
@@ -75,6 +83,7 @@ async function downloadNode(distKey) {
   } else {
     run(`tar -xJf "${archive}" -C "${cache}"`);
   }
+  logStep('Node 解压完成');
   const nodeRoot = join(cache, folder);
   const nodeBin =
     process.platform === 'win32'
@@ -88,10 +97,15 @@ async function downloadNode(distKey) {
 }
 
 function pruneProd(openclawDir) {
+  // CI 构建阶段已装全量依赖；prune 会重跑 postinstall/prepare 且极慢
+  if (process.env.GITHUB_ACTIONS === 'true') {
+    logStep('CI 跳过 pnpm prune');
+    return;
+  }
   try {
     run('pnpm prune --prod', { cwd: openclawDir });
   } catch {
-    console.log('[package] pnpm prune 跳过');
+    logStep('pnpm prune 跳过');
   }
 }
 
@@ -107,14 +121,17 @@ async function main() {
   if (existsSync(bundleDir)) rmSync(bundleDir, { recursive: true, force: true });
   mkdirSync(bundleDir, { recursive: true });
 
-  console.log(`[package] 组装 ${bundleName}`);
+  logStep(`组装 ${bundleName}`);
   pruneProd(OPENCLAW_DIR);
 
   const nodeSrc = await downloadNode(PLATFORM);
+  logStep('复制 Node 运行时到 bundle…');
   cpSync(nodeSrc, join(bundleDir, 'node'), { recursive: true });
+  logStep('Node 复制完成');
 
   const appDir = join(bundleDir, 'app');
   mkdirSync(appDir, { recursive: true });
+  logStep('复制 app（含 node_modules，可能需数分钟）…');
   cpSync(OPENCLAW_DIR, appDir, {
     recursive: true,
     filter: (src) => {
@@ -127,6 +144,7 @@ async function main() {
       return true;
     },
   });
+  logStep('app 复制完成');
 
   const binDir = join(bundleDir, 'bin');
   mkdirSync(binDir, { recursive: true });
