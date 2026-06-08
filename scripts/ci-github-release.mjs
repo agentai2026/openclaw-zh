@@ -2,7 +2,7 @@
 /**
  * 汇总多平台便携包 meta，创建 GitHub Release + latest.json
  */
-import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync, writeFileSync, basename } from 'node:fs';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
 
@@ -25,7 +25,7 @@ function buildBody(zh, official) {
     '',
     `跟进官方 **openclaw ${UPSTREAM_VERSION}**${UPSTREAM_SHA ? `（\`${UPSTREAM_SHA}\`）` : ''}，由 [openclaw-zh](https://github.com/agentai2026/openclaw-zh) 自动构建。`,
     '',
-    '**零依赖**：已内置 Node.js。Windows 提供 **`.exe` 安装程序** 与 **`.zip` 便携包**；macOS/Linux 为 `.tar.gz`。',
+    '**零依赖**：已内置 Node.js。Windows 为 **`.exe` 安装程序**；macOS/Linux 为 `.tar.gz` 便携包。',
     '',
     '### 汉化版（openclaw-zh-*）',
     '',
@@ -87,14 +87,25 @@ function main() {
     ...metas.map((m) => join(STAGING, m.file)),
   ].filter(existsSync);
 
-  for (const f of readdirSync(STAGING).filter((n) => n.endsWith('.exe'))) {
-    const p = join(STAGING, f);
-    if (!files.includes(p)) files.push(p);
+  if (files.length < 2) {
+    console.error('[release] 产物不足，请检查 meta 与安装包是否齐全');
+    process.exit(1);
   }
+
+  const allowedNames = new Set(files.map((f) => basename(f)));
 
   try {
     execSync(`gh release view "${tag}"`, { stdio: 'pipe' });
-    console.log(`[release] 已存在 ${tag}，上传补充资源`);
+    console.log(`[release] 已存在 ${tag}，清理多余资产后重新上传`);
+    const assets = JSON.parse(
+      execSync(`gh release view "${tag}" --json assets`, { encoding: 'utf8' }),
+    ).assets;
+    for (const a of assets) {
+      if (!allowedNames.has(a.name)) {
+        console.log(`[release] 删除多余资产: ${a.name}`);
+        execSync(`gh api -X DELETE "repos/${REPO}/releases/assets/${a.id}"`, { stdio: 'inherit' });
+      }
+    }
     execSync(`gh release upload "${tag}" ${files.map((f) => `"${f}"`).join(' ')} --clobber`, {
       stdio: 'inherit',
     });

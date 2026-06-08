@@ -168,7 +168,7 @@ Filename: "{app}\\README.txt"; Description: "${chineseIsl ? '查看说明' : 'Vi
     sha256,
     size: readFileSync(exePath).length,
   };
-  writeFileSync(join(STAGING_ROOT, `${bundleName}.exe.meta.json`), `${JSON.stringify(meta, null, 2)}\n`);
+  writeFileSync(join(STAGING_ROOT, `${bundleName}.meta.json`), `${JSON.stringify(meta, null, 2)}\n`);
   console.log(`[win-installer] ${exePath} (sha256=${sha256.slice(0, 16)}…)`);
 }
 

@@ -137,7 +137,11 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: release-zh-${{ matrix.platform }}
-          path: release-staging/
+          path: |
+            release-staging/openclaw-zh-*.tar.gz
+            release-staging/openclaw-zh-*.zip
+            release-staging/openclaw-zh-*.exe
+            release-staging/openclaw-zh-*.meta.json
           retention-days: 5
           if-no-files-found: error
 
@@ -157,7 +161,7 @@ jobs:
       - name: 整理产物
         run: |
           mkdir -p release-staging
-          find artifacts -type f \( -name '*.zip' -o -name '*.tar.gz' -o -name '*.exe' -o -name '*.meta.json' \) -exec cp {} release-staging/ \;
+          find artifacts -type f \( -name 'openclaw-zh-*.tar.gz' -o -name 'openclaw-zh-*.zip' -o -name 'openclaw-zh-*.exe' -o -name 'openclaw-zh-*.meta.json' \) -exec cp -n {} release-staging/ \;
           ls -la release-staging
 
       - name: 创建 GitHub Release

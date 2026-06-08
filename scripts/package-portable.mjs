@@ -221,6 +221,14 @@ async function main() {
     appendFileSync(process.env.GITHUB_OUTPUT, `bundle_name=${bundleName}\n`);
     appendFileSync(process.env.GITHUB_OUTPUT, `sha256=${sha256}\n`);
   }
+
+  // 删除 bundle 中间目录，避免 CI 把 node_modules 内 .exe 一并当作 Release 资产
+  logStep('清理 bundle 中间目录…');
+  if (existsSync(bundleDir)) rmSync(bundleDir, { recursive: true, force: true });
+  const nodeCache = join(STAGING_ROOT, '.node-cache');
+  if (existsSync(nodeCache)) rmSync(nodeCache, { recursive: true, force: true });
+  const issFile = join(STAGING_ROOT, `${bundleName}.iss`);
+  if (existsSync(issFile)) rmSync(issFile, { force: true });
 }
 
 main().catch((e) => {
