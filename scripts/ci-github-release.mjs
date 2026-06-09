@@ -2,8 +2,8 @@
 /**
  * 汇总多平台便携包 meta，创建 GitHub Release + latest.json
  */
-import { readFileSync, readdirSync, existsSync, writeFileSync, basename } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, readdirSync, existsSync, writeFileSync } from 'node:fs';
+import { join, basename } from 'node:path';
 import { execSync } from 'node:child_process';
 
 const STAGING = process.env.RELEASE_STAGING_DIR || 'release-staging';
@@ -87,15 +87,30 @@ function main() {
     ...metas.map((m) => join(STAGING, m.file)),
   ].filter(existsSync);
 
-  if (files.length < 2) {
-    console.error('[release] 产物不足，请检查 meta 与安装包是否齐全');
+  if (metas.length === 0) {
+    console.error('[release] 未找到 *.meta.json，staging 内容：');
+    if (existsSync(STAGING)) console.error(readdirSync(STAGING).join('\n'));
+    process.exit(1);
+  }
+  const missing = metas.filter((m) => !existsSync(join(STAGING, m.file)));
+  if (missing.length) {
+    console.error('[release] 缺少安装包：', missing.map((m) => m.file).join(', '));
     process.exit(1);
   }
 
   const allowedNames = new Set(files.map((f) => basename(f)));
+  const uploadArgs = files.map((f) => `"${f}"`).join(' ');
 
-  try {
-    execSync(`gh release view "${tag}"`, { stdio: 'pipe' });
+  const releaseExists = (() => {
+    try {
+      execSync(`gh release view "${tag}"`, { stdio: 'pipe' });
+      return true;
+    } catch {
+      return false;
+    }
+  })();
+
+  if (releaseExists) {
     console.log(`[release] 已存在 ${tag}，清理多余资产后重新上传`);
     const assets = JSON.parse(
       execSync(`gh release view "${tag}" --json assets`, { encoding: 'utf8' }),
@@ -106,13 +121,11 @@ function main() {
         execSync(`gh api -X DELETE "repos/${REPO}/releases/assets/${a.id}"`, { stdio: 'inherit' });
       }
     }
-    execSync(`gh release upload "${tag}" ${files.map((f) => `"${f}"`).join(' ')} --clobber`, {
-      stdio: 'inherit',
-    });
+    execSync(`gh release upload "${tag}" ${uploadArgs} --clobber`, { stdio: 'inherit' });
     execSync(`gh release edit "${tag}" --notes-file release-notes.md`, { stdio: 'inherit' });
-  } catch {
+  } else {
     execSync(
-      `gh release create "${tag}" ${files.map((f) => `"${f}"`).join(' ')} --title "OpenClaw ${BUILT_VERSION}" --notes-file release-notes.md`,
+      `gh release create "${tag}" ${uploadArgs} --title "OpenClaw ${BUILT_VERSION}" --notes-file release-notes.md`,
       { stdio: 'inherit' },
     );
   }
