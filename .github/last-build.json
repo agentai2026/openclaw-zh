@@ -1,7 +1,7 @@
 {
   "upstream_version": "2026.6.10",
-  "upstream_sha": "8d168c8",
+  "upstream_sha": "08d15ec",
   "built_version": "2026.6.10-zh",
-  "built_at": "2026-06-28T10:05:05.015Z",
+  "built_at": "2026-06-28T11:54:41.784Z",
   "release_subject": "chore: 发布汉化版 2026.6.10-zh"
 }
